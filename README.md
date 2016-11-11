@@ -10,3 +10,6 @@ TODO:
 - parse changes in the document
 - store all edited docs by client in the app folder (to compare mismatches in future)
 - if client changes the doc, then notify and update all other clients (via server)  
+- list of accessible files (server)
+- client send a new file
+- client request delete a file
