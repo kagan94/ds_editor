@@ -5,7 +5,20 @@ FORMAT = '%(asctime)-15s %(levelname)s %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 LOG = logging.getLogger()
 
-# Common
+
+# Imports----------------------------------------------------------------------
+from socket import error as soc_err
+from exceptions import Exception
+
+
+# Extend our PYTHONPATH for working directory----------------------------------
+from sys import path, argv, stdin
+from os.path import abspath, sep
+a_path = sep.join(abspath(argv[0]).split(sep)[:-1])
+path.append(a_path)
+
+
+# Common -----------------------------------------------------------------------
 SERVER_PORT = 7778
 SERVER_INET_ADDR = '127.0.0.1'
 
@@ -16,25 +29,44 @@ TIMEOUT = 5 # seconds
 TERM_CHAR = "|.|"
 
 
+def tcp_send(sock, data):
+    '''
+    @param sock: TCP socket, used to send/receive
+    @param data: The data to be sent
+    '''
+    # print "data to send: %s, len: %s" % (data, len(data))
+    data += TERM_CHAR
+    sock.send(data)
+    return len(data)
+
+
+def tcp_receive(sock, buffer_size=BUFFER_SIZE):
+    return sock.recv(buffer_size)
+
+
+def tcp_receive_all(sock, buffer_size=BUFFER_SIZE):
+    m = ''
+    while 1:
+        # Receive one block of data according to receive buffer size
+        block = sock.recv(buffer_size)
+        m += block
+        # print "received: %s, len: %s" % (block, len(block))
+        if len(block) <= 0 or m.endswith(TERM_CHAR):
+            break
+    return m[:-len(TERM_CHAR)]
 
 
 
 
-# Imports----------------------------------------------------------------------
-from socket import SHUT_WR, SHUT_RD
-from socket import socket, AF_INET, SOCK_STREAM
-from socket import error as soc_err
-from exceptions import Exception
-
-# extend our PYTHONPATH for working directory
-from sys import path, argv, stdin
-from os.path import abspath, sep
-a_path = sep.join(abspath(argv[0]).split(sep)[:-1])
-path.append(a_path)
 
 
-# TERM_CHAR = "\n"
-TEMP_DIR = "D:/temp_dir/"
+
+
+
+
+
+''' The part below can be deleted '''
+
 
 
 
@@ -84,35 +116,6 @@ def parse_query(raw_data):
     raw_data = raw_data[:-len(TERM_CHAR)]
 
     return raw_data.split(ACTION_SEP)
-
-
-def tcp_send(sock, data):
-    '''
-    @param sock: TCP socket, used to send/receive
-    @param data: The data to be sent
-    '''
-    # print "data to send: %s, len: %s" % (data, len(data))
-    data += TERM_CHAR
-    sock.send(data)
-    return len(data)
-
-
-def socket_receive(sock, buffer_size=BUFFER_SIZE):
-    return sock.recv(buffer_size)
-
-
-def socket_receive_all(sock, buffer_size=BUFFER_SIZE):
-    m = ''
-    while 1:
-        # Receive one block of data according to receive buffer size
-        block = sock.recv(buffer_size)
-        # stop receiving once the first empty block was received
-        m += block
-        # print "received: %s, len: %s" % (block, len(block))
-        if len(block) <= 0 or m.endswith(TERM_CHAR):
-            # print "BREAK"
-            break
-    return m[:-len(TERM_CHAR)]
 
 
 def tcp_receive_single_and_parse(socket):

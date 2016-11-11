@@ -21,112 +21,6 @@ global lock
 lock = threading.Lock()
 
 
-
-def main_old(s, cs):
-    # receive request, and detect the command
-    command, data = tcp_receive_single_and_parse(client_socket)
-    LOG.debug("Request is received. Start to proceed the command...")
-
-    # Case 1: File uploading
-    if command in [COMMAND_CHECK_FILE_EXISTENCE]:
-        # Step 1
-        # Check file existence before uploading
-
-        full_file_name = TEMP_DIR + data
-
-        res = __RSP_OK if not os.path.isfile(full_file_name) else __RSP_FAIL
-
-        client_socket.send(res)
-        LOG.debug("The response of check on file existence was sent to the client.")
-
-        if res != __RSP_OK:
-            LOG.info("Requested file exists in the temp folder.")
-            return
-
-        LOG.info("Requested file does not exist in the temp folder.")
-
-        # Step 2
-        # Check free memory space, before uploading
-
-        # Receive request from the client
-        _, needed_memory = tcp_receive_single_and_parse(client_socket)
-
-        res = __RSP_OK if check_necessary_usage(needed_memory, TEMP_DIR) else __RSP_FAIL
-
-        client_socket.send(res)
-        LOG.debug("The response of check of the free memory space was sent to the client.")
-
-        if res != __RSP_OK:
-            LOG.info("The free space in the folder is not enough to save the file.")
-            return
-
-        tf = open(full_file_name, "wb")
-        LOG.debug("Temporary file \"%s\" was created." % tf.name)
-
-        # Step 3
-        # Uploading the file
-        data, received_data = None, b""
-        flush_count = 1
-        res = __RSP_OK
-
-        try:
-            # Receive the file
-            while data != "":
-                data = client_socket.recv(BUFFER_SIZE)
-                received_data += data
-
-                # Calculate when we should flush the file
-                flush_num = int(float(getsizeof(received_data)) / float(FLUSH_SIZE))
-
-                if flush_num == flush_count:
-                    tf.flush()
-
-                    LOG.debug("File was flushed. Flush #%s." % flush_count)
-                    flush_count += 1
-
-            LOG.debug('Received %s bytes and saved in the file.' % getsizeof(received_data))
-            tf.write(received_data)
-
-            tf.close()
-            LOG.debug('Temp file was successfully saved and closed.')
-
-        except socket_error as (code, msg):
-            res = __RSP_FAIL
-
-            LOG.error('Socket error occurred. Error code: %s, %s' % (code, msg))
-
-            os.remove(tf.name)
-            LOG.info('Temporary file was removed.')
-
-        # Send back the result of file uploading
-        client_socket.send(res)
-
-    # # Case 2: File downloading
-    # elif command == COMMAND_DOWNLOAD_FILE:
-    #     full_file_name = TEMP_DIR + data
-    #     res = b""
-    #
-    #     if not os.path.isfile(full_file_name):
-    #         LOG.error("The file to download does not exist. (Empty request will be sent)")
-    #     else:
-    #         # Read and send the file
-    #         with open(full_file_name, "rb") as f:
-    #             res = f.read()
-    #
-    #         LOG.debug("Send the file to the client.")
-    #
-    #     tcp_send(client_socket, res)
-    #
-    # # Case 3: Get list of files in temp folder
-    # elif command == COMMAND_GET_LIST_OF_FILES:
-    #     res = os.listdir(TEMP_DIR)
-    #     res = "\n".join(res)
-    #
-    #     LOG.debug("Send list of all files in the temp folder.")
-    #     client_socket.sendall(res)
-
-
-
 def handler(c_socket):
     '''
     :param c_socket: client socket
@@ -136,6 +30,10 @@ def handler(c_socket):
     connection_n = threading.currentThread().getName().split("-")[1]
     LOG.debug("Client %s connected:" % connection_n)
     LOG.debug("Client's socket info: %s:%d’:" % c_socket.getsockname())
+
+    dir_files = os.getcwd() + "\\files\\"
+
+    # TODO: Create client id if not exist
 
     # # Receive
     # data = c_socket.recv(BUFFER_SIZE)
