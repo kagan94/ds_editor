@@ -9,9 +9,11 @@ LOG = logging.getLogger()
 LOG.info('Client-side started working...')
 
 # Imports----------------------------------------------------------------------
-from protocol import socket_receive_all, TERM_CHAR, SERVER_PORT,SERVER_INET_ADDR, BUFFER_SIZE, SEP, close_socket, socket_receive, tcp_send
+from protocol import tcp_send, tcp_send_all, tcp_receive, \
+                     COMMAND, RESP, parse_query, \
+                     SERVER_PORT, SERVER_INET_ADDR, close_socket
 from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
-
+import ConfigParser as CP, os
 
 
 
@@ -32,6 +34,45 @@ def __connect():
     return s
 
 
+def get_user_id(s):
+    '''
+    :param s: socket
+    :return: string, user_id
+    '''
+    # Path to the config file
+    current_path = os.path.abspath(os.path.dirname(__file__))
+    config_file = current_path + "\\config.ini"
+
+    # If the config exists, get the user_id from it
+    if os.path.isfile(config_file):
+        conf = CP.ConfigParser()
+        conf.read(config_file)
+        user_id = conf.get('USER_INFO', 'user_id')
+
+        LOG.debug("Notify server about existing user_id")
+        tcp_send(s, COMMAND.NOTIFY_ABOUT_USER_ID, user_id)
+
+        # Receive empty response about saving of user_id on the server
+        _ = tcp_receive(s)
+
+    # If the config was deleted or doesn't exist
+    else:
+        LOG.debug("Request to the server to generate a new user_id")
+        tcp_send(s, COMMAND.GENERATE_USER_ID)
+
+        # Get response from the server with user_id (_ is command/response)
+        _, user_id = parse_query(tcp_receive(s))
+
+        conf = CP.RawConfigParser()
+        conf.add_section("USER_INFO")
+        conf.set('USER_INFO', 'user_id', user_id)
+
+        with open(config_file, 'w') as cf:
+            conf.write(cf)
+
+    return user_id
+
+
 # Main part of client application
 def start_gui(s):
     '''
@@ -39,36 +80,24 @@ def start_gui(s):
     :return: -
     '''
 
-    # TODO: Check id and send to the server
-    # id is given by the server. If not exist, server creates it and it to the client
+    # If user_id doesn't exist, server creates it.
+    # Otherwise client notifies the server about its user_id
+    user_id = get_user_id(s)
 
 
 
-    # R-R
+	# Just testing R-R
     tcp_send(s, "1|something")
-    resp = socket_receive_all(s)
+    resp = tcp_receive(s)
     print "Response 1: %s, msg'len %s" % (resp, len(resp))
-
-    # try:
-    #     answer = socket_receive(s)
-    #     res = answer.split(SEP)
-    #
-    #     print(res)
-    # except socket_error as (code, msg):
-    #     if code == 10054:
-    #         LOG.error('Server is not available.')
-    #     else:
-    #         LOG.error('Socket error occurred. Error code: %s, %s' % (code, msg))
-    #     return None
-
 
     # Test 2
     tcp_send(s, "55|ccccccp")
-    print "Response 2: %s" % socket_receive_all(s)
+    print "Response 2: %s" % tcp_receive(s)
 
     # Test 3
     tcp_send(s, "66|aaa")
-    print "Response 3: %s" % socket_receive_all(s)
+    print "Response 3: %s" % tcp_receive(s)
 
 
     # while True:

@@ -10,17 +10,18 @@ LOG = logging.getLogger()
 
 
 # Imports----------------------------------------------------------------------
-from protocol import SERVER_PORT, SERVER_INET_ADDR, BUFFER_SIZE, SEP, close_socket, tcp_send, socket_receive_all, TERM_CHAR
+from protocol import SERVER_PORT, SERVER_INET_ADDR, tcp_send, tcp_receive, tcp_send_all, close_socket, \
+                     COMMAND, RESP, parse_query
 from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
 import threading, os, time
+import uuid  # for generating unique uuid
 
-
-# Main function ---------------------------------------------------
 
 global lock
 lock = threading.Lock()
 
 
+# Main function ---------------------------------------------------
 def handler(c_socket):
     '''
     :param c_socket: client socket
@@ -31,9 +32,27 @@ def handler(c_socket):
     LOG.debug("Client %s connected:" % connection_n)
     LOG.debug("Client's socket info: %s:%d’:" % c_socket.getsockname())
 
+    user_id = ""
     dir_files = os.getcwd() + "\\files\\"
 
-    # TODO: Create client id if not exist
+    while 1:
+        # TODO: Create client id if not exist
+
+        command, data = parse_query(tcp_receive(c_socket))
+        LOG.debug("Client's request (%s) - %s|%s" % (c_socket.getsockname(), command, data[:10] + "..."))
+
+        if command == COMMAND.GENERATE_USER_ID:
+            # make a unique user_id based on the host ID and current time
+            user_id = uuid.uuid1()
+            tcp_send(c_socket, RESP.OK, user_id)
+            LOG.debug("Server generated a new user_id (%s) and sent it to the client" % user_id)
+
+        elif command == COMMAND.NOTIFY_ABOUT_USER_ID:
+            user_id = data
+            LOG.debug("Client sent his existing user_id (%s)" % user_id)
+
+            tcp_send(c_socket, RESP.OK)
+            LOG.debug("Empty request with acknowledgement about receiving user_id was sent to the client")
 
     # # Receive
     # data = c_socket.recv(BUFFER_SIZE)
@@ -42,20 +61,18 @@ def handler(c_socket):
     # print(parse[0], parse[1])
 
     # get request 1
-    print(socket_receive_all(c_socket))
+    print(tcp_receive(c_socket))
 
     # Request - response 1
     tcp_send(c_socket, "1|xxxx")
-    print(socket_receive_all(c_socket))
+    print(tcp_receive(c_socket))
 
     # Request - response 2
     tcp_send(c_socket, "2|notification")
-    print(socket_receive_all(c_socket))
+    print(tcp_receive(c_socket))
 
     # response 2
     tcp_send(c_socket, "5|Got it!")
-
-    # while 1:
 
     # lock.acquire()
     # # Do something

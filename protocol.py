@@ -6,9 +6,16 @@ logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 LOG = logging.getLogger()
 
 
+# Info--------------------------------------------------------------------------
+___NAME = "Protocol to the online document editor"
+___VER = "0.0.1"
+
+def __info():
+    return '%s version %s' % (___NAME, ___VER)
+
+
 # Imports----------------------------------------------------------------------
-from socket import error as soc_err
-from exceptions import Exception
+from socket import error as socket_error
 
 
 # Extend our PYTHONPATH for working directory----------------------------------
@@ -22,108 +29,106 @@ path.append(a_path)
 SERVER_PORT = 7778
 SERVER_INET_ADDR = '127.0.0.1'
 
-# Receive not more than 1024 bytes per 1 msg
-BUFFER_SIZE = 1024
-SEP = "|"
-TIMEOUT = 5 # seconds
+BUFFER_SIZE = 1024 # Receive not more than 1024 bytes per 1 msg
+SEP = "|" # separate command and data in request
+TIMEOUT = 5 # in seconds
 TERM_CHAR = "|.|"
 
 
-def tcp_send(sock, data):
+# "Enum" for commands
+def enum(**vals):
+    return type('Enum', (), vals)
+
+COMMAND = enum(
+    # From client to the Server
+    GENERATE_USER_ID = '1',
+    NOTIFY_ABOUT_USER_ID = '2',
+    # From Server to the client
+    # RIGHT = 3,
+    # LEFT = 4,
+    # NONE = 0
+)
+
+
+# Responses
+RESP = enum(
+    OK = '0',
+    FAIL = '1',
+    NOTIFY_ABOUT_USER_ID = '2', # notify server about user id
+)
+
+# Main functions ---------------------------------------------------------------
+def tcp_send(sock, command, data=""):
+    '''  TCP send request
+    @param sock: TCP socket
+    @param command: Command to the server/client
+    @param data: The data to be sent
     '''
-    @param sock: TCP socket, used to send/receive
+    # print "data to send: %s, len: %s" % (data, len(data))
+    query = str(command) + SEP + str(data) + TERM_CHAR
+    sock.send(query)
+    return len(query)
+
+
+def tcp_send_all(sock, data):
+    '''
+    @param sock: TCP socket
     @param data: The data to be sent
     '''
     # print "data to send: %s, len: %s" % (data, len(data))
     data += TERM_CHAR
-    sock.send(data)
+    sock.sendall(data)
     return len(data)
 
 
 def tcp_receive(sock, buffer_size=BUFFER_SIZE):
-    return sock.recv(buffer_size)
-
-
-def tcp_receive_all(sock, buffer_size=BUFFER_SIZE):
+    '''
+    :param sock: TCP socket
+    :param buffer_size: max possible size of message per one receive call
+    :return: message without terminate characters
+    '''
     m = ''
     while 1:
-        # Receive one block of data according to receive buffer size
-        block = sock.recv(buffer_size)
-        m += block
+        try:
+            # Receive one block of data according to receive buffer size
+            block = sock.recv(buffer_size)
+            m += block
+        except socket_error as (code, msg):
+            if code == 10054:
+                LOG.error('Server is not available.')
+            else:
+                LOG.error('Socket error occurred. Error code: %s, %s' % (code, msg))
+            return None
+
         # print "received: %s, len: %s" % (block, len(block))
-        if len(block) <= 0 or m.endswith(TERM_CHAR):
+        # print m, TERM_CHAR, m.endswith(TERM_CHAR)
+
+        # if m.endswith(TERM_CHAR) or len(block) <= 0:
+        if m.endswith(TERM_CHAR):
             break
     return m[:-len(TERM_CHAR)]
 
 
 
-
-
-
-
-
-
-
-
-''' The part below can be deleted '''
-
-
-
-
-# Server vars
-# Do the file flush when the file size equals the "flush_size"
-# needs to not keep a huge amount of the data in RAM (we just save it from time to time)
-FLUSH_SIZE = BUFFER_SIZE  * 100
-
-
-# Commands --------------------------------------------------------------------
-COMMAND_CHECK_FILE_EXISTENCE = "check_file_existence"
-COMMAND_CHECK_SPACE_FOR_FILE = "check_space_for_file"
-COMMAND_GET_LIST_OF_FILES = "get_list_of_files"
-COMMAND_DOWNLOAD_FILE = "download_file"
-
-# Responses--------------------------------------------------------------------
-__RSP_OK = '0'
-__RSP_FAIL = '1'
-
-
-# Info--------------------------------------------------------------------------
-___NAME = "Protocol to file uploading/downloading"
-___VER = "0.0.1"
-
-
-def __info():
-    return '%s version %s' % (___NAME, ___VER)
-
-
-def prepare_query(command, data = ""):
-    # Command structure (ex: command:data\n)
-
-    return ACTION_SEP.join((command, data))
-
-
-def send_query(s, query):
-    # s - socket
-
-    LOG.debug("Query to send: %s" % query)
-    s.send(query + TERM_CHAR)
-
-
 def parse_query(raw_data):
-    # Return: (command, data)
+    '''
+    :param raw_data: string that may contain command and data
+    :return: (command, data)
+    '''
+    # Split string by separator to get the command and data
+    raw_data = raw_data.split(SEP)
+    command, data = raw_data[0], "".join(raw_data[1:])
+    return command, data
 
-    # remove term charm from the end
-    raw_data = raw_data[:-len(TERM_CHAR)]
 
-    return raw_data.split(ACTION_SEP)
-
-
-def tcp_receive_single_and_parse(socket):
-    # receive request, and detect the command from client socket
-    # return: command, data
-
-    data = socket.recv(BUFFER_SIZE)
-    return parse_query(data)
+# def tcp_receive(sock, buffer_size=BUFFER_SIZE):
+#     '''
+#     :param sock: TCP socket
+#     :param buffer_size: max possible size of receiving message
+#     :return: message without terminate characters
+#     '''
+#     m = sock.recv(buffer_size)
+#     return m[:-len(TERM_CHAR)]
 
 
 def close_socket(sock, log_msg=""):
@@ -131,7 +136,7 @@ def close_socket(sock, log_msg=""):
     # be no I/O descriptor
     try:
         sock.fileno()
-    except soc_err:
+    except socket_error:
         LOG.debug('Socket closed already ...')
         return
 
