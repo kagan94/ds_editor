@@ -1,18 +1,26 @@
 import Tkinter
-from Tkinter import * 
 import tkFileDialog
+from Tkinter import *
+from ScrolledText import *
 
 
-def key(event):
+def any_key_pressed(event):
     print "pressed", repr(event.char)
 
 
+def enter_pressed(event):
+    print "'enter' pressed", repr(event.char)
+
+
 root = Tkinter.Tk(className="Text Editor")
-text=Text(root)
+text = ScrolledText(root, width=110, height=30)
 text.grid()
 
+# Recognize any press on the keyboard (only characters and backspace)
+text.bind("<Key>", any_key_pressed)
 
-text.bind("<Key>", key)
+# Recognize a "enter" press
+text.bind("<Return>", enter_pressed)
 
 
 def open():
