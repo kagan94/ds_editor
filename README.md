@@ -9,15 +9,16 @@
 * created a config file on the server and its structure (LIMITED_FILES, OWNERS_FILES)
 
 ## TODO Client:
-* send to all clients (except the user user thread) a latest copy of file (if user's changed something)
-* send a new opened file
+* ??? send to all clients (except the user user thread) a latest copy of file (if user's changed something) (client should not notify other clients, it should notify only server about changes)
+* ??? send a new opened file (what do you mean?)
 * request to create a new file on the server
 
 
 ## TODO Server:
-* store all edited docs in the app folder (to compare mismatches in future)
-* if client changes the doc, send request to server to notify other users
-* notify clients when the file was deleted
+* store all edited docs in the app folder (to compare mismatches in future) (instead of app folder we can use sql DB)
+* if client changes the doc, send request to server to notify other connected users
+* when user connected to server, server compares local user's file to the last file's version stored in server and renews user's file if needed
+* notify clients when the file was deleted ( we can remove files without notification)
 * save owner of the file to the config(format: file_name = owner_id, section: OWNERS_FILES)
 
 ## TODO GUI:
