@@ -44,7 +44,8 @@ COMMAND = enum(
     GENERATE_USER_ID = '1',
     NOTIFY_ABOUT_USER_ID = '2',
     LIST_OF_ACCESIBLE_FILES = '3',
-    DELETE_FILE = '4',
+    CREATE_NEW_FILE = '4',
+    DELETE_FILE = '5',
     # From Server to the client
     # RIGHT = 3,
     # LEFT = 4,
@@ -56,8 +57,15 @@ COMMAND = enum(
 RESP = enum(
     OK = '0',
     FAIL = '1',
-    PERMISSION_ERROR = '2',
-    NOTIFY_ABOUT_USER_ID = '3', # notify server about user id
+    PERMISSION_ERROR = '2', # in case of deletion of file
+    FILE_ALREADY_EXISTS = '3',
+    NOTIFY_ABOUT_USER_ID = '4', # notify server about user id
+)
+
+# Access to the file
+ACCESS = enum(
+    PUBLIC = '0',
+    PRIVATE = '1'
 )
 
 # Main functions ---------------------------------------------------------------
@@ -119,8 +127,10 @@ def parse_query(raw_data):
     :return: (command, data)
     '''
     # Split string by separator to get the command and data
-    raw_data = raw_data.split(SEP)
-    command, data = raw_data[0], "".join(raw_data[1:])
+    # print raw_data
+    cleaned_data = raw_data.split(SEP)
+    command, data = cleaned_data[0], raw_data[len(cleaned_data[0]) + 1:]
+    # print command, data
     return command, data
 
 
