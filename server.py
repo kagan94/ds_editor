@@ -11,26 +11,24 @@ LOG = logging.getLogger()
 
 # Imports----------------------------------------------------------------------
 from protocol import SERVER_PORT, SERVER_INET_ADDR, tcp_send, tcp_receive, tcp_send_all, close_socket, \
-                     COMMAND, RESP, ACCESS, SEP, parse_query
+                     COMMAND, RESP, SEP, parse_query
 from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
 import threading, os
 import uuid  # for generating unique uuid
 import ConfigParser as CP # for server settings
 
-# global lock
+global lock
 lock = threading.Lock()
 current_path = os.path.abspath(os.path.dirname(__file__))
 config_file_path = current_path + "\\server_config.ini"
-dir_files = os.getcwd() + "\\files\\"
 
 
-# Functions to work with config -----------------------------------
 def server_config_file():
     '''
     :return: config object
     '''
     global config_file_path, lock
-    # lock.acquire()
+    lock.acquire()
 
     # Case 1: config exists
     if os.path.isfile(config_file_path):
@@ -46,20 +44,8 @@ def server_config_file():
         with open(config_file_path, 'w') as cf:
             conf.write(cf)
 
-    # lock.release()
-    return conf
-
-
-def save_config(config):
-    global config_file_path, lock
-    '''
-    :param config: config object
-    :return: -
-    '''
-    lock.acquire()
-    with open(config_file_path, 'w') as cf:
-        config.write(cf)
     lock.release()
+    return conf
 
 
 def limited_files_from_config(conf, user_id):
@@ -69,12 +55,7 @@ def limited_files_from_config(conf, user_id):
     :return: list of limited files
     '''
     try:
-        limited_files = []
-        for (owner_id, files) in conf.items('LIMITED_FILES'):
-            if owner_id != user_id:
-                for file_name in files.split(SEP):
-                    limited_files.append(file_name)
-        return limited_files
+        return [file_name for (file_name, owner) in conf.items('LIMITED_FILES') if owner != user_id]
     except:
         return []
 
@@ -87,20 +68,12 @@ def is_user_owner_of_file(conf, file_name, user_id):
     :return: (Boolean)
     '''
     try:
-        files = conf.get("LIMITED_FILES", user_id).split(SEP)
-        return file_name in files
+        owner_id = conf.get('LIMITED_FILES', file_name)
+        return owner_id == user_id
 
     # If there's no owner of the file
     except:
         return True
-
-
-def value_of_option_from_config(config, section, option):
-    try:
-        val = config.get(section, option)
-    except:
-        val = None
-    return val
 
 
 def remove_option_from_config(config, section, option):
@@ -111,60 +84,14 @@ def remove_option_from_config(config, section, option):
         LOG.error("Option(%s) cannot be deleted" % option)
 
 
-# Main functions -------------------------------------------------
-def create_file(config, file_name, user_id, access):
-    '''
-    :param config: config object
-    :param file_name: (string)
-    :param user_id: (string)
-    :param access: can be private or
-    :return:
-    '''
-    lock.acquire()
-    res = RESP.OK
-    full_file_path = dir_files + file_name
-
-    if not os.path.isfile(full_file_path):
-        # Create empty file
-        with open(full_file_path, "w") as f:
-            pass
-
-        # Writing in config
-        try:
-            user_files = config.get("OWNERS_FILES", user_id)
-            config.set("OWNERS_FILES", user_id, user_files + SEP + file_name)
-        except:
-            config.set("OWNERS_FILES", user_id, file_name)
-
-        # If file is only visible to the user
-        if access == ACCESS.PRIVATE:
-            try:
-                limited_files = config.get("LIMITED_FILES", user_id)
-                config.set("LIMITED_FILES", user_id, limited_files + SEP + file_name)
-            except:
-                config.set("LIMITED_FILES", user_id, file_name)
-    else:
-        res = RESP.FILE_ALREADY_EXISTS
-
-    lock.release()
-
-    # if there're some changes - save them
-    save_config(config)
-
-    return res
-
-
 def remove_file(config, file_path, user_id):
-    global lock
     '''
     :param config: config object
     :param file_name: (string)
     :param user_id: (string)
     :return: result of deletion (enum)
     '''
-
     file_name = os.path.basename(file_path)
-    lock.acquire()
 
     if is_user_owner_of_file(config, file_name, user_id):
         try:
@@ -172,40 +99,30 @@ def remove_file(config, file_path, user_id):
 
             # remove file from config
             remove_option_from_config(config, "OWNERS_FILES", file_name)
-
-            # Remove file from limited files from config
-            files = value_of_option_from_config(config, "LIMITED_FILES", user_id)
-            files = files.split(SEP) if files else []
-
-            if file_name in files:
-                files.remove(file_name)
-                config.set("LIMITED_FILES", user_id, SEP.join(files))
+            remove_option_from_config(config, "LIMITED_FILES", file_name)
 
             resp = RESP.OK
         except:
             resp = RESP.FAIL
     else:
-        resp = RESP.FILE_ALREADY_EXISTS
-
-    lock.release()
-    save_config(config)
+        resp = RESP.PERMISSION_ERROR
 
     return resp
 
 
-# Main function  and its handler ---------------------------------
+# Main function ---------------------------------------------------
 def handler(c_socket):
     '''
     :param c_socket: client socket
     :return: -
     '''
-    global dir_files, lock
 
     connection_n = threading.currentThread().getName().split("-")[1]
     LOG.debug("Client %s connected:" % connection_n)
     LOG.debug("Client's socket info: %s:%d’:" % c_socket.getsockname())
 
     user_id = ""
+    dir_files = os.getcwd() + "\\files\\"
     conf = server_config_file()
 
     while 1:
@@ -238,25 +155,12 @@ def handler(c_socket):
         elif command == COMMAND.DELETE_FILE:
             LOG.debug("Client requested to delete a file \"%s\" (client:%s...)" % (data, user_id[:7]))
 
+            lock.acquire()
             resp = remove_file(config=conf, file_path=dir_files + data, user_id=user_id)
-
-            # TODO: if response is OK, notify other clients
+            lock.release()
 
             tcp_send(c_socket, resp)
             LOG.debug("Response(code:%s) of file deletion was sent to the client (:%s...)" % (resp, user_id[:7]))
-
-        elif command == COMMAND.CREATE_NEW_FILE:
-            LOG.debug("Client requested to create a new file (client:%s...)" % user_id[:7])
-
-            # print(data, SEP)
-            file_name, access = data.split(SEP)
-            resp = create_file(conf, file_name, user_id, access)
-
-            # TODO: if response is OK and access is public, notify other clients
-
-            tcp_send(c_socket, resp)
-            LOG.debug("Response(code:%s) of file creation was sent to the client (:%s...)" % (resp, user_id[:7]))
-
 
     # # Receive
     # data = c_socket.recv(BUFFER_SIZE)
@@ -285,6 +189,7 @@ def handler(c_socket):
     # # lock.release()
 
     close_socket(c_socket, 'Close client socket.')
+
 
 
 def main():

@@ -10,7 +10,7 @@ LOG.info('Client-side started working...')
 
 # Imports----------------------------------------------------------------------
 from protocol import tcp_send, tcp_send_all, tcp_receive, \
-                     COMMAND, RESP, ACCESS, SEP, parse_query, \
+                     COMMAND, RESP, parse_query, SEP, \
                      SERVER_PORT, SERVER_INET_ADDR, close_socket
 from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
 import ConfigParser as CP, os
@@ -92,24 +92,6 @@ def get_files_to_edit(s):
     return files
 
 
-def create_new_file(s, file_name, access):
-    '''
-    :param s: socket
-    :param file_name: name of file that should be created
-    :param access: can be public or private (visible only for this client)
-    :return: response code
-    '''
-
-    LOG.debug("Request to the server to create a new file")
-    data = file_name + SEP + access
-    tcp_send(s, COMMAND.CREATE_NEW_FILE, data)
-
-    response, _ = parse_query(tcp_receive(s))
-    LOG.debug("Received response of creation of new file (code:%s" % response)
-
-    return response
-
-
 def delete_file(s, file_name):
     '''
     :param s: socket
@@ -153,33 +135,12 @@ def start_gui(s):
     user_id = get_user_id(s)
 
 
-    # List of accessible files
     files_to_edit = get_files_to_edit(s)
     # print(files_to_edit)
 
 
-    # File deletion
     file_to_delete = "123.txt"
-    del_res = delete_file(s, file_to_delete)
-
-
-    # File creation
-    # access = ACCESS.PUBLIC
-    file_name, access = "new_file_3nd.txt", ACCESS.PRIVATE
-    # Response on creation of new file
-    new_file_res = create_new_file(s, file_name, access)
-
-    if new_file_res == RESP.OK:
-        LOG.info("Server created a new file successfully")
-
-    elif new_file_res == RESP.FILE_ALREADY_EXISTS:
-        LOG.error("File with requested name already exists")
-
-    elif new_file_res == RESP.FAIL:
-        LOG.error("Server couldn't create a new file with requested name")
-
-
-
+    del_resp = delete_file(s, file_to_delete)
     # TODO: Update file list in GUI if the result is OK, otherwise show error
 
     # Just testing R-R
