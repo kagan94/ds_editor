@@ -10,7 +10,7 @@ LOG.info('Client-side started working...')
 
 # Imports----------------------------------------------------------------------
 from protocol import tcp_send, tcp_send_all, tcp_receive, \
-                     COMMAND, RESP, parse_query, \
+                     COMMAND, RESP, parse_query, SEP, \
                      SERVER_PORT, SERVER_INET_ADDR, close_socket
 from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
 import ConfigParser as CP, os
@@ -37,7 +37,7 @@ def __connect():
 def get_user_id(s):
     '''
     :param s: socket
-    :return: string, user_id
+    :return: user_id (string)
     '''
     # Path to the config file
     current_path = os.path.abspath(os.path.dirname(__file__))
@@ -73,6 +73,56 @@ def get_user_id(s):
     return user_id
 
 
+def get_files_to_edit(s):
+    '''
+    :param s: socket
+    :return: list with file names that are possible to edit
+    '''
+    LOG.debug("Request to the server to get list of accessible files to edit")
+    tcp_send(s, COMMAND.LIST_OF_ACCESIBLE_FILES)
+
+    result, files = parse_query(tcp_receive(s))
+    LOG.debug("Received response of available files")
+
+    if result == RESP.OK:
+        files = files.split(SEP)
+    else:
+        files = []
+
+    return files
+
+
+def delete_file(s, file_name):
+    '''
+    :param s: socket
+    :param file_name: file to delete (string)
+    :return: result of the deletion file on the server
+    '''
+    LOG.debug("Request to the server to delete file\"%s\"" % file_name)
+    tcp_send(s, COMMAND.DELETE_FILE, file_name)
+
+    # Receive response of deletion of the file
+    result, files = parse_query(tcp_receive(s))
+    LOG.debug("Received response of deletion file operation(code:%s)" % result)
+
+    if result == RESP.OK:
+        LOG.debug("File was successfully deleted on the server")
+
+        # Delete local copy of the file
+        try:
+            os.remove(file_name)
+            LOG.debug("Local copy of file was deleted successfully")
+        except:
+            LOG.debug("Local copy of file can't be found. But file was deleted on the server")
+    elif result == RESP.PERMISSION_ERROR:
+        LOG.debug("Client doesn't have permission to delete file \"%s\"" % file_name)
+    elif result == RESP.FAIL:
+        LOG.debug("Server couldn't delete requested file \"%s\"" % file_name)
+        # LOG.debug("Client File \"%s\" was not deleted..." % file_name)
+
+    return result
+
+
 # Main part of client application
 def start_gui(s):
     '''
@@ -85,19 +135,26 @@ def start_gui(s):
     user_id = get_user_id(s)
 
 
+    files_to_edit = get_files_to_edit(s)
+    # print(files_to_edit)
 
-	# Just testing R-R
-    tcp_send(s, "1|something")
-    resp = tcp_receive(s)
-    print "Response 1: %s, msg'len %s" % (resp, len(resp))
 
-    # Test 2
-    tcp_send(s, "55|ccccccp")
-    print "Response 2: %s" % tcp_receive(s)
+    file_to_delete = "123.txt"
+    del_resp = delete_file(s, file_to_delete)
+    # TODO: Update file list in GUI if the result is OK, otherwise show error
 
-    # Test 3
-    tcp_send(s, "66|aaa")
-    print "Response 3: %s" % tcp_receive(s)
+    # Just testing R-R
+    # tcp_send(s, "1|something")
+    # resp = tcp_receive(s)
+    # print "Response 1: %s, msg'len %s" % (resp, len(resp))
+    #
+    # # Test 2
+    # tcp_send(s, "55|ccccccp")
+    # print "Response 2: %s" % tcp_receive(s)
+    #
+    # # Test 3
+    # tcp_send(s, "66|aaa")
+    # print "Response 3: %s" % tcp_receive(s)
 
 
     # while True:

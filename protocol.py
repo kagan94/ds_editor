@@ -43,6 +43,8 @@ COMMAND = enum(
     # From client to the Server
     GENERATE_USER_ID = '1',
     NOTIFY_ABOUT_USER_ID = '2',
+    LIST_OF_ACCESIBLE_FILES = '3',
+    DELETE_FILE = '4',
     # From Server to the client
     # RIGHT = 3,
     # LEFT = 4,
@@ -54,7 +56,8 @@ COMMAND = enum(
 RESP = enum(
     OK = '0',
     FAIL = '1',
-    NOTIFY_ABOUT_USER_ID = '2', # notify server about user id
+    PERMISSION_ERROR = '2',
+    NOTIFY_ABOUT_USER_ID = '3', # notify server about user id
 )
 
 # Main functions ---------------------------------------------------------------

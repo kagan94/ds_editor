@@ -2,3 +2,4 @@
 .idea/ds_editor.iml
 .idea/vcs.xml
 *.xml
+*.pyc
