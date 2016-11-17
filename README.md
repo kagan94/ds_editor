@@ -7,12 +7,11 @@
 * list of accessible files (client-server-client)
 * delete a file on server and local copy on client
 * created a config file on the server and its structure (LIMITED_FILES, OWNERS_FILES)
-* save owner of the file to the config(format: file_name = owner_id, section: OWNERS_FILES)
+* save owner of the file to the server config(format: file_name = owner_id, section: OWNERS_FILES)
+* send request to create a new file on the server (client)
 
 ## TODO Client:
 * send the request to the server with changes in the file
-* send request to create a new file on the server
-
 
 ## TODO Server:
 * store all edited docs in the app folder (to compare mismatches in future)
