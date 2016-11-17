@@ -19,6 +19,7 @@
 * when user connected to server, server compares local user's file to the last file's version stored in server and renews user's file if needed
 * notify clients if the file was deleted
 * notify clients if the file was created with a public access
+* FIX Bug with reading config to get the freshest data
 
 
 ## TODO GUI:
