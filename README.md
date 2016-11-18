@@ -9,9 +9,12 @@
 * created a config file on the server and its structure (LIMITED_FILES, OWNERS_FILES)
 * save owner of the file to the server config(format: file_name = owner_id, section: OWNERS_FILES)
 * send request to create a new file on the server (client)
+* server wants to close all the connections (break while)
+* fixed a bug with reading config to get the freshest data
 
 ## TODO Client:
 * send the request to the server with changes in the file
+* create asynchronous receiving to receive notification about file updating
 
 ## TODO Server:
 * store all edited docs in the app folder (to compare mismatches in future)

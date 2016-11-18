@@ -10,7 +10,7 @@ LOG = logging.getLogger()
 
 
 # Imports----------------------------------------------------------------------
-from protocol import SERVER_PORT, SERVER_INET_ADDR, tcp_send, tcp_receive, tcp_send_all, close_socket, \
+from protocol import SERVER_PORT, SERVER_INET_ADDR, tcp_send, tcp_receive, close_socket, \
                      COMMAND, RESP, ACCESS, SEP, parse_query
 from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
 import threading, os
@@ -29,8 +29,7 @@ def server_config_file():
     '''
     :return: config object
     '''
-    global config_file_path, lock
-    # lock.acquire()
+    global config_file_path
 
     # Case 1: config exists
     if os.path.isfile(config_file_path):
@@ -46,7 +45,6 @@ def server_config_file():
         with open(config_file_path, 'w') as cf:
             conf.write(cf)
 
-    # lock.release()
     return conf
 
 
@@ -62,15 +60,21 @@ def save_config(config):
     lock.release()
 
 
-def limited_files_from_config(conf, user_id):
+def limited_files_from_config(user_id):
+    global lock
     '''
     :param conf: config object
     :param user_id: (string)
     :return: list of limited files
     '''
+
+    lock.acquire()
+    config = server_config_file()
+    lock.release()
+
     try:
         limited_files = []
-        for (owner_id, files) in conf.items('LIMITED_FILES'):
+        for (owner_id, files) in config.items('LIMITED_FILES'):
             if owner_id != user_id:
                 for file_name in files.split(SEP):
                     limited_files.append(file_name)
@@ -112,7 +116,7 @@ def remove_option_from_config(config, section, option):
 
 
 # Main functions -------------------------------------------------
-def create_file(config, file_name, user_id, access):
+def create_file(file_name, user_id, access):
     '''
     :param config: config object
     :param file_name: (string)
@@ -121,8 +125,10 @@ def create_file(config, file_name, user_id, access):
     :return:
     '''
     lock.acquire()
+
     res = RESP.OK
     full_file_path = dir_files + file_name
+    config = server_config_file()
 
     if not os.path.isfile(full_file_path):
         # Create empty file
@@ -154,7 +160,7 @@ def create_file(config, file_name, user_id, access):
     return res
 
 
-def remove_file(config, file_path, user_id):
+def remove_file(file_path, user_id):
     global lock
     '''
     :param config: config object
@@ -163,8 +169,10 @@ def remove_file(config, file_path, user_id):
     :return: result of deletion (enum)
     '''
 
-    file_name = os.path.basename(file_path)
     lock.acquire()
+
+    file_name = os.path.basename(file_path)
+    config = server_config_file()
 
     if is_user_owner_of_file(config, file_name, user_id):
         try:
@@ -206,7 +214,6 @@ def handler(c_socket):
     LOG.debug("Client's socket info: %s:%d’:" % c_socket.getsockname())
 
     user_id = ""
-    conf = server_config_file()
 
     while 1:
         command, data = parse_query(tcp_receive(c_socket))
@@ -229,7 +236,7 @@ def handler(c_socket):
             LOG.debug("Client requested to get a list of available files (client:%s...)" % user_id[:7])
 
             all_files = [f for f in os.listdir(dir_files) if os.path.isfile(os.path.join(dir_files, f))]
-            limited_files = limited_files_from_config(conf, user_id)
+            limited_files = limited_files_from_config(user_id)
             available_files = set(all_files) - set(limited_files)
 
             tcp_send(c_socket, RESP.OK, SEP.join(available_files))
@@ -238,25 +245,24 @@ def handler(c_socket):
         elif command == COMMAND.DELETE_FILE:
             LOG.debug("Client requested to delete a file \"%s\" (client:%s...)" % (data, user_id[:7]))
 
-            resp = remove_file(config=conf, file_path=dir_files + data, user_id=user_id)
-
-            # TODO: if response is OK, notify other clients
+            resp = remove_file(file_path=dir_files + data, user_id=user_id)
 
             tcp_send(c_socket, resp)
             LOG.debug("Response(code:%s) of file deletion was sent to the client (:%s...)" % (resp, user_id[:7]))
+
+            # TODO: if response is OK, notify other clients
 
         elif command == COMMAND.CREATE_NEW_FILE:
             LOG.debug("Client requested to create a new file (client:%s...)" % user_id[:7])
 
             # print(data, SEP)
             file_name, access = data.split(SEP)
-            resp = create_file(conf, file_name, user_id, access)
-
-            # TODO: if response is OK and access is public, notify other clients
+            resp = create_file(file_name, user_id, access)
 
             tcp_send(c_socket, resp)
             LOG.debug("Response(code:%s) of file creation was sent to the client (:%s...)" % (resp, user_id[:7]))
 
+            # TODO: if response is OK and access is public, notify other clients
 
     # # Receive
     # data = c_socket.recv(BUFFER_SIZE)
@@ -301,16 +307,20 @@ def main():
     threads = []
 
     while 1:
-        # Client connected
-        client_socket, addr = s.accept()
-        LOG.debug("New Client connected.")
+        try:
+            # Client connected
+            client_socket, addr = s.accept()
+            LOG.debug("New Client connected.")
 
-        # For each connection create a new thread
-        t = threading.Thread(target=handler, args=(client_socket,))
-        threads.append(t)
-        t.start()
-
-        # TODO: if server wants, break while
+            # For each connection create a new thread
+            t = threading.Thread(target=handler, args=(client_socket,))
+            threads.append(t)
+            t.start()
+        except KeyboardInterrupt:
+            LOG.info("Terminating by keyboard interrupt...")
+            break
+        except socket_error as err:
+            LOG.error("Socket error - %s" % err)
 
     # Terminating application
     close_socket(s, 'Close server socket.')

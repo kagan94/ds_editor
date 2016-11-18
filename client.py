@@ -9,7 +9,7 @@ LOG = logging.getLogger()
 LOG.info('Client-side started working...')
 
 # Imports----------------------------------------------------------------------
-from protocol import tcp_send, tcp_send_all, tcp_receive, \
+from protocol import tcp_send, tcp_receive, \
                      COMMAND, RESP, ACCESS, SEP, parse_query, \
                      SERVER_PORT, SERVER_INET_ADDR, close_socket
 from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
@@ -178,10 +178,12 @@ def start_gui(s):
     elif new_file_res == RESP.FAIL:
         LOG.error("Server couldn't create a new file with requested name")
 
+    # TODO: Update file list in GUI if the result of file creation/deletion is OK, otherwise show error
 
 
-    # TODO: Update file list in GUI if the result is OK, otherwise show error
+    # TODO: Create asynchronous receiving to receive notification about file updating
 
+    #
     # Just testing R-R
     # tcp_send(s, "1|something")
     # resp = tcp_receive(s)

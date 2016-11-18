@@ -68,6 +68,7 @@ ACCESS = enum(
     PRIVATE = '1'
 )
 
+
 # Main functions ---------------------------------------------------------------
 def tcp_send(sock, command, data=""):
     '''  TCP send request
@@ -77,19 +78,8 @@ def tcp_send(sock, command, data=""):
     '''
     # print "data to send: %s, len: %s" % (data, len(data))
     query = str(command) + SEP + str(data) + TERM_CHAR
-    sock.send(query)
+    sock.sendall(query)
     return len(query)
-
-
-def tcp_send_all(sock, data):
-    '''
-    @param sock: TCP socket
-    @param data: The data to be sent
-    '''
-    # print "data to send: %s, len: %s" % (data, len(data))
-    data += TERM_CHAR
-    sock.sendall(data)
-    return len(data)
 
 
 def tcp_receive(sock, buffer_size=BUFFER_SIZE):
@@ -120,7 +110,6 @@ def tcp_receive(sock, buffer_size=BUFFER_SIZE):
     return m[:-len(TERM_CHAR)]
 
 
-
 def parse_query(raw_data):
     '''
     :param raw_data: string that may contain command and data
@@ -132,16 +121,6 @@ def parse_query(raw_data):
     command, data = cleaned_data[0], raw_data[len(cleaned_data[0]) + 1:]
     # print command, data
     return command, data
-
-
-# def tcp_receive(sock, buffer_size=BUFFER_SIZE):
-#     '''
-#     :param sock: TCP socket
-#     :param buffer_size: max possible size of receiving message
-#     :return: message without terminate characters
-#     '''
-#     m = sock.recv(buffer_size)
-#     return m[:-len(TERM_CHAR)]
 
 
 def close_socket(sock, log_msg=""):
