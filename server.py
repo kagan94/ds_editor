@@ -117,6 +117,7 @@ def remove_option_from_config(config, section, option):
 
 def update_file(file_name, data):
     pass
+    # TODO: rewrite file
 
 def notify_clients(file_name, data):
     for t in threading.enumerate():

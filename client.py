@@ -142,15 +142,12 @@ def delete_file(s, file_name):
 
 
 # Main part of client application
-def start_gui(s):
+def start_gui(s, user_id):
     '''
     :param s: client socket (to communicate with a server)
     :return: -
     '''
 
-    # If user_id doesn't exist, server creates it.
-    # Otherwise client notifies the server about its user_id
-    user_id = get_user_id(s)
 
 
     # List of accessible files
@@ -201,6 +198,14 @@ def start_gui(s):
     # while True:
     #     print(2)
 
+def start_updater(user_id):
+    sock = __connect()
+    while True:
+        tcp_send(sock, COMMAND.WAITING_FOR_UPDATES)
+        res = tcp_receive(sock)
+        _, text = parse_query(res)
+        name_file, t = parse_query(text)
+
 
 def main():
     s = __connect()
@@ -208,8 +213,15 @@ def main():
     # If socked was not created, then exit
     if s is None: return
 
+    # If user_id doesn't exist, server creates it.
+    # Otherwise client notifies the server about its user_id
+    user_id = get_user_id(s)
+
     # Start GUI and main program
-    start_gui(s)
+    start_gui(s, user_id)
+    updater_thread = threading.Thread(target=start_updater, args=(user_id,))
+    updater_thread.start()
+
 
     # Close socket it there're some problems
     close_socket(s, "Close client socket.")
