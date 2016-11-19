@@ -30,3 +30,7 @@
 * action to create a new file
 * action to delete a file
 * find how to recognize that user pushed "delete" key?
+
+
+## !!! Do not do:
+* user deletes selected region of text
