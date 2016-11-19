@@ -20,8 +20,8 @@ import ConfigParser as CP # for server settings
 # global lock
 lock = threading.Lock()
 current_path = os.path.abspath(os.path.dirname(__file__))
-config_file_path = current_path + "\\server_config.ini"
-dir_files = os.getcwd() + "\\files\\"
+config_file_path = os.path.join(current_path, "server_config.ini")
+dir_files = os.path.join(os.getcwd(),"files")
 
 
 # Functions to work with config -----------------------------------
