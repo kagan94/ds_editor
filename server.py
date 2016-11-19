@@ -292,7 +292,7 @@ def handler(c_socket):
             update_file(file_name, text)
             notify_clients(file_name, text)
 
-        elif command = COMMAND.WAITING_FOR_UPDATES:
+        elif command == COMMAND.WAITING_FOR_UPDATES:
 
             current_thread.waiting_for_update = True
 
