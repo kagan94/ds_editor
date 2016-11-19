@@ -46,6 +46,9 @@ COMMAND = enum(
     LIST_OF_ACCESIBLE_FILES = '3',
     CREATE_NEW_FILE = '4',
     DELETE_FILE = '5',
+    UPDATE_FILE = '6',
+    WAITING_FOR_UPDATES = '7',
+    UPDATE_NOTIFICATIOn = '8',
     # From Server to the client
     # RIGHT = 3,
     # LEFT = 4,

@@ -115,6 +115,19 @@ def remove_option_from_config(config, section, option):
     except:
         LOG.error("Option(%s) cannot be deleted" % option)
 
+def update_file(file_name, data):
+    pass
+
+def notify_clients(file_name, data):
+    for t in threading.enumerate():
+        if getattr(t, 'waiting_for_update', False):
+            sending_data = SEP.join((file_name, data))
+            tcp_send(t.socket, UPDATE_NOTIFICATION, sending_data)
+
+
+
+
+
 
 # Main functions -------------------------------------------------
 def create_file(file_name, user_id, access):
@@ -212,7 +225,10 @@ def handler(c_socket):
     '''
     global dir_files, lock
 
-    connection_n = threading.currentThread().getName().split("-")[1]
+    current_thread = threading.current_thread()
+    connection_n = current_thread.getName().split("-")[1]
+    current_thread.socket = c_socket
+
     LOG.debug("Client %s connected:" % connection_n)
     LOG.debug("Client's socket info: %s:%d’:" % c_socket.getsockname())
 
@@ -221,6 +237,8 @@ def handler(c_socket):
     while True:
         command, data = parse_query(tcp_receive(c_socket))
         LOG.debug("Client's request (%s) - %s|%s" % (c_socket.getsockname(), command, data[:10] + "..."))
+
+        current_thread.waiting_for_update = False
 
         if command == COMMAND.GENERATE_USER_ID:
             # make a unique user_id based on the host ID and current time
@@ -266,6 +284,20 @@ def handler(c_socket):
             LOG.debug("Response(code:%s) of file creation was sent to the client (:%s...)" % (resp, user_id[:7]))
 
             # TODO: if response is OK and access is public, notify other clients
+
+        elif command == COMMAND.UPDATE_FILE:
+            LOG.debug("Client requested to update a file (client:%s...)" % user_id[:7])
+
+            file_name, text = data.split(SEP)
+            update_file(file_name, text)
+            notify_clients(file_name, text)
+
+        elif command = COMMAND.WAITING_FOR_UPDATES:
+
+            current_thread.waiting_for_update = True
+
+
+
 
     # # Receive
     # data = c_socket.recv(BUFFER_SIZE)
