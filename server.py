@@ -21,7 +21,7 @@ import ConfigParser as CP # for server settings
 lock = threading.Lock()
 current_path = os.path.abspath(os.path.dirname(__file__))
 config_file_path = os.path.join(current_path, "server_config.ini")
-dir_files = os.path.join(os.getcwd(),"files")
+dir_files = os.path.join(os.getcwd(), "files")
 
 
 # Functions to work with config -----------------------------------
@@ -49,16 +49,13 @@ def server_config_file():
 
 
 def save_config(config):
-    global config_file_path, lock
     '''
     :param config: config object
     :return: -
-    s.path.join
     '''
-    lock.acquire()
+    global config_file_path
     with open(config_file_path, 'w') as cf:
         config.write(cf)
-    lock.release()
 
 
 def limited_files_from_config(user_id):
@@ -92,12 +89,20 @@ def is_user_owner_of_file(conf, file_name, user_id):
     :return: (Boolean)
     '''
     try:
-        files = conf.get("LIMITED_FILES", user_id).split(SEP)
+        files = conf.get("OWNERS_FILES", user_id).split(SEP)
         return file_name in files
 
     # If there's no owner of the file
     except:
         return True
+
+
+# def user_has_access_to_file(conf, file_name, user_id):
+#
+#     if is_user_owner_of_file(conf, file_name, user_id) or ....:
+#         return True
+#
+#     return False
 
 
 def value_of_option_from_config(config, section, option):
@@ -115,19 +120,12 @@ def remove_option_from_config(config, section, option):
     except:
         LOG.error("Option(%s) cannot be deleted" % option)
 
-def update_file(file_name, data):
-    pass
-    # TODO: rewrite file
 
 def notify_clients(file_name, data):
     for t in threading.enumerate():
         if getattr(t, 'waiting_for_update', False):
             sending_data = SEP.join((file_name, data))
-            tcp_send(t.socket, UPDATE_NOTIFICATION, sending_data)
-
-
-
-
+            tcp_send(t.socket, COMMAND.UPDATE_NOTIFICATION, sending_data)
 
 
 # Main functions -------------------------------------------------
@@ -142,7 +140,7 @@ def create_file(file_name, user_id, access):
     lock.acquire()
 
     res = RESP.OK
-    full_file_path = dir_files + file_name
+    full_file_path = dir_files + "\\" + file_name
     config = server_config_file()
 
     if not os.path.isfile(full_file_path):
@@ -167,17 +165,47 @@ def create_file(file_name, user_id, access):
     else:
         res = RESP.FILE_ALREADY_EXISTS
 
+    # if there're some changes - save them
     save_config(config)
     lock.release()
-
-    # if there're some changes - save them
 
     return res
 
 
+def get_file_content(file_name, user_id):
+    '''
+    :param file_name: (string)
+    :return: content from the file (string)
+    '''
+    global dir_files
+    file_path = os.path.join(dir_files, file_name)
+    limited_files = limited_files_from_config(user_id)
+    content, resp = "", RESP.OK
+
+    lock.acquire()
+    config = server_config_file()
+
+    if os.path.isfile(file_path):
+        # Check user's permissions
+        if file_name not in limited_files:
+            with open(file_path, "r") as f:
+                content = f.read()
+        else:
+            resp = RESP.PERMISSION_ERROR
+    else:
+        resp = RESP.FILE_DOES_NOT_EXIST
+
+    lock.release()
+
+    return resp, content
+
+
+def update_file(file_name, data):
+    pass
+    # TODO: rewrite file
+
+
 def remove_file(file_path, user_id):
-
-
     global lock
     '''
     :param config: config object
@@ -245,14 +273,14 @@ def handler(c_socket):
             # make a unique user_id based on the host ID and current time
             user_id = uuid.uuid1()
             tcp_send(c_socket, RESP.OK, user_id)
-            LOG.debug("Server generated a new user_id (%s) and sent it to the client" % user_id)
+            LOG.debug("Server generated a new user_id (%s) and sent it to client" % user_id)
 
         elif command == COMMAND.NOTIFY_ABOUT_USER_ID:
             user_id = data
             LOG.debug("Client sent his existing user_id (%s)" % user_id)
 
             tcp_send(c_socket, RESP.OK)
-            LOG.debug("Empty request with acknowledgement about receiving user_id was sent to the client")
+            LOG.debug("Empty request with acknowledgement about receiving user_id was sent to client")
 
         elif command == COMMAND.LIST_OF_ACCESIBLE_FILES:
             LOG.debug("Client requested to get a list of available files (client:%s...)" % user_id[:7])
@@ -262,17 +290,16 @@ def handler(c_socket):
             available_files = set(all_files) - set(limited_files)
 
             tcp_send(c_socket, RESP.OK, SEP.join(available_files))
-            LOG.debug("List of available files was sent to the client (:%s...)" % user_id[:7])
+            LOG.debug("List of available files was sent to client (:%s...)" % user_id[:7])
 
-        elif command == COMMAND.DELETE_FILE:
-            LOG.debug("Client requested to delete a file \"%s\" (client:%s...)" % (data, user_id[:7]))
+        elif command == COMMAND.GET_FILE:
+            file_name = data
+            LOG.debug("Client requested to get file \"%s\" (client:%s...)" % (file_name, user_id[:7]))
 
-            resp = remove_file(file_path=dir_files + data, user_id=user_id)
+            resp, content = get_file_content(file_name, user_id)
 
-            tcp_send(c_socket, resp)
-            LOG.debug("Response(code:%s) of file deletion was sent to the client (:%s...)" % (resp, user_id[:7]))
-
-            # TODO: if response is OK, notify other clients
+            tcp_send(c_socket, RESP.OK, content)
+            LOG.debug("Response (code:%s) on getting requested file was sent to client (:%s...)" % (resp, user_id[:7]))
 
         elif command == COMMAND.CREATE_NEW_FILE:
             LOG.debug("Client requested to create a new file (client:%s...)" % user_id[:7])
@@ -282,9 +309,19 @@ def handler(c_socket):
             resp = create_file(file_name, user_id, access)
 
             tcp_send(c_socket, resp)
-            LOG.debug("Response(code:%s) of file creation was sent to the client (:%s...)" % (resp, user_id[:7]))
+            LOG.debug("Response(code:%s) of file creation was sent to client (:%s...)" % (resp, user_id[:7]))
 
             # TODO: if response is OK and access is public, notify other clients
+
+        elif command == COMMAND.DELETE_FILE:
+            LOG.debug("Client requested to delete a file \"%s\" (client:%s...)" % (data, user_id[:7]))
+
+            resp = remove_file(file_path=dir_files + data, user_id=user_id)
+
+            tcp_send(c_socket, resp)
+            LOG.debug("Response(code:%s) of file deletion was sent to client (:%s...)" % (resp, user_id[:7]))
+
+            # TODO: if response is OK, notify other clients
 
         elif command == COMMAND.UPDATE_FILE:
             LOG.debug("Client requested to update a file (client:%s...)" % user_id[:7])
@@ -294,37 +331,7 @@ def handler(c_socket):
             notify_clients(file_name, text)
 
         elif command == COMMAND.WAITING_FOR_UPDATES:
-
             current_thread.waiting_for_update = True
-
-
-
-
-    # # Receive
-    # data = c_socket.recv(BUFFER_SIZE)
-    # parse = data.split(SEP)
-    #
-    # print(parse[0], parse[1])
-
-    # get request 1
-    # print(tcp_receive(c_socket))
-    #
-    # # Request - response 1
-    # tcp_send(c_socket, "1|xxxx")
-    # print(tcp_receive(c_socket))
-    #
-    # # Request - response 2
-    # tcp_send(c_socket, "2|notification")
-    # print(tcp_receive(c_socket))
-    #
-    # # response 2
-    # tcp_send(c_socket, "5|Got it!")
-
-    # lock.acquire()
-    # # Do something
-    # client_socket.send(BUFFER_SIZE)
-    # lock.acquire()
-    # # lock.release()
 
     close_socket(c_socket, 'Close client socket.')
 
@@ -337,6 +344,7 @@ def main():
 
     # Socket in the listening state
     LOG.info("Waiting for a client connection...")
+
     # If we want to limit # of connections, then change 0 to # of possible connections
     s.listen(0)
 

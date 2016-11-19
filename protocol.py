@@ -41,14 +41,15 @@ def enum(**vals):
 
 COMMAND = enum(
     # From client to the Server
-    GENERATE_USER_ID = '1',
-    NOTIFY_ABOUT_USER_ID = '2',
-    LIST_OF_ACCESIBLE_FILES = '3',
-    CREATE_NEW_FILE = '4',
-    DELETE_FILE = '5',
-    UPDATE_FILE = '6',
-    WAITING_FOR_UPDATES = '7',
-    UPDATE_NOTIFICATIOn = '8',
+    GENERATE_USER_ID='1',
+    NOTIFY_ABOUT_USER_ID='2',
+    LIST_OF_ACCESIBLE_FILES='3',
+    CREATE_NEW_FILE='4',
+    GET_FILE='5',
+    DELETE_FILE='6',
+    UPDATE_FILE='7',
+    WAITING_FOR_UPDATES='8',
+    UPDATE_NOTIFICATION='9',
     # From Server to the client
     # RIGHT = 3,
     # LEFT = 4,
@@ -58,11 +59,12 @@ COMMAND = enum(
 
 # Responses
 RESP = enum(
-    OK = '0',
-    FAIL = '1',
-    PERMISSION_ERROR = '2', # in case of deletion of file
-    FILE_ALREADY_EXISTS = '3',
-    NOTIFY_ABOUT_USER_ID = '4', # notify server about user id
+    OK='0',
+    FAIL='1',
+    PERMISSION_ERROR='2', # in case of deletion of file
+    FILE_ALREADY_EXISTS='3',
+    FILE_DOES_NOT_EXIST='4',
+    NOTIFY_ABOUT_USER_ID='5', # notify server about user id
 )
 
 # Access to the file

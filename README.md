@@ -11,6 +11,7 @@
 * send request to create a new file on the server (client)
 * server wants to close all the connections (break while)
 * fixed a bug with reading config to get the freshest data
+* show list of accessible files (GUI)
 
 ## TODO Client:
 * send the request to the server with changes in the file
@@ -26,7 +27,6 @@
 
 ## TODO GUI:
 * update file list when the file was deleted
-* show list of accessible files
 * action to create a new file
 * action to delete a file
 * find how to recognize that user pushed "delete" key?
