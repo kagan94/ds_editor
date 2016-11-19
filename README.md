@@ -14,11 +14,11 @@
 
 ## TODO Client:
 * send the request to the server with changes in the file
-* create asynchronous receiving to receive notification about file updating
+* create asynchronous receiving to receive notification about file updating (in process)
 
 ## TODO Server:
 * store all edited docs in the app folder (to compare mismatches in future)
-* if client requested update the doc. Save the changes on the server and send request to other clients to update version of file
+* if client requested update the doc. Save the changes on the server and send request to other clients to update version of file (almost done)
 * when user connected to server, server compares local user's file to the last file's version stored in server and renews user's file if needed
 * notify clients if the file was deleted
 * notify clients if the file was created with a public access
