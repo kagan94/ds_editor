@@ -1,7 +1,12 @@
-import Tkinter, tkFileDialog, tkMessageBox, ttk
+import Tkinter, tkFileDialog, tkMessageBox, ttk, os
 from Tkinter import *
 from ScrolledText import *
 from protocol import RESP
+import difflib
+
+# local copies of files on the client side
+current_path = os.path.abspath(os.path.dirname(__file__))
+dir_local_files = os.path.join(current_path, "client_local_files")
 
 
 class GUI(object):
@@ -43,7 +48,7 @@ class GUI(object):
         self.file_menu = Menu(self.menu)
         self.menu.add_cascade(label="File", menu=self.file_menu)
         self.file_menu.add_command(label="New", command=self.onFileCreation)
-        self.file_menu.add_command(label="Open", command=self.onOpenFile)
+        # self.file_menu.add_command(label="Open", command=self.onOpenFile)
         self.file_menu.add_separator()
         self.file_menu.add_command(label="Exit", command=self.onExit)
 
@@ -96,21 +101,24 @@ class GUI(object):
         selected_file = w.get(index)
 
         if selected_file and (not self.previously_selected_file or self.previously_selected_file != selected_file):
-
             print 'You selected item "%s"' % selected_file
 
-            # Save/update opened file in local storage
-            # TODO: save opened file and load requested file
+            # Save previously opened text file in local storage
+            self.save_opened_text()
 
-            # Download requested file
+            # Download selected file
             resp, content = self.client.get_file_on_server(selected_file)
 
+            # Case: File was successfully downloaded
             if resp == RESP.OK:
+                # Unblock and update text window
                 self.unblock_text_window()
-
-                # Update window
                 self.replace_text(content)
-                # self.upload_content_into_textfield(content)
+
+                # Check whether the local copy was changed or not
+                self.compare_local_copy_with_origin(local_file_name=selected_file, original_text=content)
+
+            # Case: Error response from server on file downloading
             else:
                 self.clear_text()
                 self.block_text_window()
@@ -121,20 +129,33 @@ class GUI(object):
     def onFileCreation(self):
         file_name = "test.txt"
 
-        # Create a new empty file
-        with open(file_name, 'w'):
-            pass
+        access = 1 # Private
+        access = 0 # Public
 
-    def onOpenFile(self):
-        tk_file = tkFileDialog.askopenfile(parent=root, mode='rb', title='Select a file')
+        # TODO: connect msg box with file name and checkbox to this function
 
-        with open('test.txt','w') as f:
-            f.write(self.text.get(1.0, END))
+        resp_code = self.client.create_new_file(file_name, access)
 
-        if tk_file:
-            contents = tk_file.read()
-            self.upload_content_into_textfield(contents)
-            tk_file.close()
+        if resp_code == RESP.OK:
+            self.save_opened_text()
+
+            # Create a new empty file
+            with open(file_name, 'w'):
+                pass
+
+            self.files_list.insert(END, file_name)
+        else:
+            print "Error happened with file creation. (code: %s)" % resp_code
+    # def onOpenFile(self):
+    #     tk_file = tkFileDialog.askopenfile(parent=root, mode='rb', title='Select a file')
+    #
+    #     with open('test.txt','w') as f:
+    #         f.write(self.text.get(1.0, END))
+    #
+    #     if tk_file:
+    #         contents = tk_file.read()
+    #         self.upload_content_into_textfield(contents)
+    #         tk_file.close()
 
     def onExit(self):
         # if tkMessageBox.askokcancel("Quit", "Do you really want to quit?"):
@@ -144,20 +165,34 @@ class GUI(object):
         self.root.destroy()
 
     # Functions to work with interface ==================================================================
-    def compare_changes(self, text_1, text_2):
+    def compare_local_copy_with_origin(self, local_file_name, original_text):
         '''
-        :param text_1: (string)
-        :param text_2: (string)
+        :param local_file_name: File that may locate on the client side
+        :param original_text: original content on the server
         :return: (Boolean) True - if the texts are the same
         '''
-        if text_1 == text_2:
-            print "Information is the same"
+        local_file_path = os.path.join(dir_local_files, local_file_name)
+
+        # If local copy of the file exists, then compare copies
+        if os.path.isfile(local_file_path):
+            with open(local_file_path, "r") as lf:
+                local_content = lf.read()
+
+            if local_content == original_text:
+                print "Information is the same"
+
+            else:
+                print "Information doesn't match!"
+
+                local_content, original_text = local_content.strip().splitlines(), original_text.strip().splitlines()
+
+                for line in difflib.unified_diff(local_content, original_text, lineterm=''):
+                    print line
+
+                # TODO: show changes between local copy and download file in GUI
+
         else:
-            print "Information doesn't match!"
-
-        # TODO: figure out which changes were made and show them to the user
-
-        return text_1 == text_2
+            print "Local copy was not found"
 
     def upload_list_of_accessible_files_into_menu(self):
         accessible_files = self.client.get_accessible_files()
@@ -165,8 +200,20 @@ class GUI(object):
         for filename in accessible_files:
             self.files_list.insert(END, filename)
 
+    # Save previously opened text file in local storage
+    def save_opened_text(self):
+        if self.previously_selected_file is not None:
+            ps_file_path = os.path.join(dir_local_files, self.previously_selected_file)
+
+            with open(ps_file_path, "w") as f:
+                content = self.get_text()
+                f.write(content)
+
     def get_text(self):
         contents = self.text.get(1.0, Tkinter.END)
+
+        # Tkinter adds \n in the text field. That's why we should deduct it.
+        contents = contents[:len(contents) - len("\n")]
         return contents
 
     def set_text(self, info):

@@ -12,15 +12,15 @@
 * server wants to close all the connections (break while)
 * fixed a bug with reading config to get the freshest data
 * show list of accessible files (GUI)
+* added comparison of local file (if exist) and original content on the server (GUI file, client side)
+* store all docs in the file folder (personal for client, and personal for server)
 
 ## TODO Client:
 * send the request to the server with changes in the file
 * create asynchronous receiving to receive notification about file updating (in process)
 
 ## TODO Server:
-* store all edited docs in the app folder (to compare mismatches in future)
-* if client requested update the doc. Save the changes on the server and send request to other clients to update version of file (almost done)
-* when user connected to server, server compares local user's file to the last file's version stored in server and renews user's file if needed
+* if client requested to update the doc. Save the changes on the server and send request to other clients to update version of file (almost done)
 * notify clients if the file was deleted
 * notify clients if the file was created with a public access
 

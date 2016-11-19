@@ -183,7 +183,6 @@ def get_file_content(file_name, user_id):
     content, resp = "", RESP.OK
 
     lock.acquire()
-    config = server_config_file()
 
     if os.path.isfile(file_path):
         # Check user's permissions

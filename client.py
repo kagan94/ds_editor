@@ -120,10 +120,10 @@ class Client(object):
         data = file_name + SEP + access
         tcp_send(self.s, COMMAND.CREATE_NEW_FILE, data)
 
-        response, _ = parse_query(tcp_receive(self.s))
-        LOG.debug("Received response of creation of new file (code:%s" % response)
+        resp_code, _ = parse_query(tcp_receive(self.s))
+        LOG.debug("Received response of creation of new file (code:%s" % resp_code)
 
-        return response
+        return resp_code
 
     def delete_file(self, file_name):
         '''
