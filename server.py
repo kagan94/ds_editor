@@ -53,6 +53,7 @@ def save_config(config):
     '''
     :param config: config object
     :return: -
+    s.path.join
     '''
     lock.acquire()
     with open(config_file_path, 'w') as cf:
@@ -152,15 +153,17 @@ def create_file(file_name, user_id, access):
     else:
         res = RESP.FILE_ALREADY_EXISTS
 
+    save_config(config)
     lock.release()
 
     # if there're some changes - save them
-    save_config(config)
 
     return res
 
 
 def remove_file(file_path, user_id):
+
+
     global lock
     '''
     :param config: config object
@@ -195,8 +198,8 @@ def remove_file(file_path, user_id):
     else:
         resp = RESP.FILE_ALREADY_EXISTS
 
-    lock.release()
     save_config(config)
+    lock.release()
 
     return resp
 
@@ -215,7 +218,7 @@ def handler(c_socket):
 
     user_id = ""
 
-    while 1:
+    while True:
         command, data = parse_query(tcp_receive(c_socket))
         LOG.debug("Client's request (%s) - %s|%s" % (c_socket.getsockname(), command, data[:10] + "..."))
 
@@ -306,7 +309,7 @@ def main():
 
     threads = []
 
-    while 1:
+    while True:
         try:
             # Client connected
             client_socket, addr = s.accept()
