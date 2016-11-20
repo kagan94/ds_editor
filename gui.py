@@ -120,7 +120,7 @@ class GUI(object):
                 print "Delete pressed", pos_change
                 # self.text.delete(float(pos_change[0]) + .1)
 
-            elif char != "" and event.keysym != "Escape":
+            elif char != "":
                 self.client.update_file_on_server(current_file, CHANGE_TYPE.INSERT, pos_change, key=char)
                 print "pressed", char, pos_change, event.keysym
 
