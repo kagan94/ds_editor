@@ -12,7 +12,7 @@ LOG = logging.getLogger()
 # Imports----------------------------------------------------------------------
 from protocol import SERVER_PORT, SERVER_INET_ADDR, tcp_send, tcp_receive, close_socket, \
                      COMMAND, RESP, ACCESS, CHANGE_TYPE, SEP, parse_query
-from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
+from socket import AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, socket, error as socket_error
 import threading, os
 import uuid  # for generating unique uuid
 import ConfigParser as CP # for server settings
@@ -444,6 +444,7 @@ def main():
     LOG.info('Application started and server socket created')
 
     s = socket(AF_INET, SOCK_STREAM)
+    s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 0)
     s.bind((SERVER_INET_ADDR, SERVER_PORT))
 
     # Socket in the listening state
