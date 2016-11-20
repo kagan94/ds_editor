@@ -1,7 +1,7 @@
 import Tkinter, tkFileDialog, tkMessageBox, ttk, os
 from Tkinter import *
 from ScrolledText import *
-from protocol import RESP, CHANGE_TYPE, error_code_to_string
+from protocol import RESP, CHANGE_TYPE, parse_change, error_code_to_string
 import tkSimpleDialog, difflib
 
 
@@ -304,3 +304,48 @@ class GUI(object):
             message += ".\n" + error_code_to_string(err_code)
 
         self.status.set("Last action: " + message)
+
+    #  =========================================================================
+    def update_from_another_client(self, change):
+        '''
+        Another client made the change => update text window
+        :param change: (string) in format
+        '''
+
+        # Parse change that arrived from server
+        # position is in format "row.column"
+        file_to_change, change_type, pos, key = parse_change(change)
+
+        # And check whether the selected file matches with file in change
+        selected_file = self.selected_file()
+
+        if selected_file and selected_file == file_to_change:
+            # Depending on change, do the change
+
+            if change_type == CHANGE_TYPE.DELETE:
+                self.text.delete(pos)
+
+            elif change_type == CHANGE_TYPE.BACKSPACE:
+                splitted_pos = pos.split(".")
+                row, column = int(splitted_pos[0]), int(splitted_pos[1])
+
+                if row - 1 > 0 and column == 0:
+                    # Get last index in previous line, and delete it
+                    pr_pos = str(row - 1) + ".0"
+                    pr_line_last_len = len(self.text.get(pr_pos, pos))
+                    last_index = str(row - 1) + "." + str(pr_line_last_len)
+
+                    self.text.delete(last_index)
+                elif column > 0:
+                    pos_to_del = str(row) + "." + str(column - 1)
+                    self.text.delete(pos_to_del)
+
+            elif change_type == CHANGE_TYPE.ENTER:
+                self.text.insert(pos, "\n")
+
+            elif change_type == CHANGE_TYPE.INSERT:
+                self.text.insert(pos, key)
+
+            # print file_to_change, change_type, pos, key
+
+            self.set_notification_status("another user changed the file")

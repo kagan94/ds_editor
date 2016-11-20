@@ -11,7 +11,7 @@ LOG = logging.getLogger()
 
 # Imports----------------------------------------------------------------------
 from protocol import SERVER_PORT, SERVER_INET_ADDR, tcp_send, tcp_receive, close_socket, \
-                     COMMAND, RESP, ACCESS, CHANGE_TYPE, SEP, parse_query
+                     COMMAND, RESP, ACCESS, CHANGE_TYPE, SEP, parse_change, parse_query
 from socket import AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, socket, error as socket_error
 import os, threading
 import uuid  # for generating unique uuid
@@ -177,7 +177,7 @@ def get_file_content(file_name, user_id):
     global dir_files
     file_path = os.path.join(dir_files, file_name)
     limited_files = limited_files_from_config(user_id)
-    content, resp = "", RESP.OK
+    content, resp_code = "", RESP.OK
 
     lock.acquire()
 
@@ -187,13 +187,13 @@ def get_file_content(file_name, user_id):
             with open(file_path, "r") as f:
                 content = f.read()
         else:
-            resp = RESP.PERMISSION_ERROR
+            resp_code = RESP.PERMISSION_ERROR
     else:
-        resp = RESP.FILE_DOES_NOT_EXIST
+        resp_code = RESP.FILE_DOES_NOT_EXIST
 
     lock.release()
 
-    return resp, content
+    return resp_code, content
 
 
 def update_file(file_name, change_type, pos, key=""):
@@ -208,13 +208,14 @@ def update_file(file_name, change_type, pos, key=""):
 
     file_path = os.path.join(dir_files, file_name)
     resp = RESP.OK
-    row, i = list(map(int, pos.split(".")))  # i-index(column)
+    row, column = tuple(map(int, pos.split(".")))  # pos is tuple(row, column)
 
     lock.acquire()
 
     # Add change from client into the queue "changes"
     change = [file_name, change_type, pos, key]
     changes.append(change)
+
 
     # Strategy:
     # We read existing file, make some changes, and save this file
@@ -230,8 +231,8 @@ def update_file(file_name, change_type, pos, key=""):
 
     if change_type == CHANGE_TYPE.DELETE:
         # Case: Delete the next existing char
-        if i + 1 <= len(line):
-            lines[row - 1] = line[:i] + line[i + 1:]
+        if column + 1 <= len(line):
+            lines[row - 1] = line[:column] + line[column + 1:]
 
         # Case: need to delete \n and append next line
         else:
@@ -248,11 +249,11 @@ def update_file(file_name, change_type, pos, key=""):
 
     elif change_type == CHANGE_TYPE.BACKSPACE:
         # Case: delete previous character
-        if i - 1 >= 0:
-            lines[row - 1] = line[:i - 1] + line[i:]
+        if column - 1 >= 0:
+            lines[row - 1] = line[:column - 1] + line[column:]
 
         # Case: delete previous line if exist
-        elif row - 1 > 0 and i - 1 < 0:
+        elif row - 1 > 0 and column - 1 < 0:
             lines[row - 2] += lines[row - 1]
 
             # Delete appended line
@@ -260,7 +261,7 @@ def update_file(file_name, change_type, pos, key=""):
 
     elif change_type == CHANGE_TYPE.ENTER:
         # Split text (if needed) and separate 2 lines
-        head, tail = line[:i], line[i:]
+        head, tail = line[:column], line[column:]
 
         lines[row - 1] = head
 
@@ -273,7 +274,7 @@ def update_file(file_name, change_type, pos, key=""):
             lines.append(tail)
 
     elif change_type == CHANGE_TYPE.INSERT:
-        lines[row - 1] = line[:i] + key + line[i:]
+        lines[row - 1] = line[:column] + key + line[column:]
 
     # Write new changes into file
     with open(file_path, "w") as f:
@@ -325,15 +326,24 @@ def remove_file(file_path, user_id):
     return resp
 
 
+def notify_other_clients():
+    '''Function to notify other clients about changes'''
+    global sessions
+    while changes:
+        change = changes.pop(0)
+        for t in sessions:
+            # print t.name
+            t.notify(change)
+
 # Main handler ---------------------------------------------------
 class EditSession(threading.Thread):
-
     def __init__(self, client_sock, client_sock_address):
         threading.Thread.__init__(self)
         self.__sock = client_sock
         self.__addr = client_sock_address
         self.__send_lock = threading.Lock()
         self.__filename = None
+        self.notify_me = True
 
     def run(self):
         global dir_files, lock
@@ -348,22 +358,31 @@ class EditSession(threading.Thread):
         user_id = ""
 
         while True:
-            command, data = parse_query(tcp_receive(self.__sock))
-            LOG.debug("Client's request (%s) - %s|%s" % (self.__sock.getsockname(), command, data[:10] + "..."))
+            msg = tcp_receive(self.__sock)
+            resp_code, sending_data = RESP.OK, ""
 
-            current_thread.waiting_for_update = False
+            # Msg received successfully
+            if msg:
+                command, data = parse_query(msg)
+                LOG.debug("Client's request (%s) - %s|%s" % (self.__sock.getsockname(), command, data[:10] + "..."))
+
+            # Case: some problem with receiving data
+            else:
+                LOG.debug("Client(%s) closed the connection" % connection_n)
+                break
 
             if command == COMMAND.GENERATE_USER_ID:
                 # make a unique user_id based on the host ID and current time
                 user_id = uuid.uuid1()
-                tcp_send(self.__sock, RESP.OK, user_id)
+
+                resp_code, sending_data = RESP.OK, user_id
                 LOG.debug("Server generated a new user_id (%s) and sent it to client" % user_id)
 
             elif command == COMMAND.NOTIFY_ABOUT_USER_ID:
                 user_id = data
                 LOG.debug("Client sent his existing user_id (%s)" % user_id)
 
-                tcp_send(self.__sock, RESP.OK)
+                resp_code = RESP.OK
                 LOG.debug("Empty request with acknowledgement about receiving user_id was sent to client")
 
             elif command == COMMAND.LIST_OF_ACCESIBLE_FILES:
@@ -373,87 +392,65 @@ class EditSession(threading.Thread):
                 limited_files = limited_files_from_config(user_id)
                 available_files = set(all_files) - set(limited_files)
 
-                tcp_send(self.__sock, RESP.OK, SEP.join(available_files))
+                resp_code, sending_data = RESP.OK, SEP.join(available_files)
                 LOG.debug("List of available files was sent to client (:%s...)" % user_id[:7])
 
             elif command == COMMAND.GET_FILE:
                 file_name = data
                 LOG.debug("Client requested to get file \"%s\" (client:%s...)" % (file_name, user_id[:7]))
 
-                resp, content = get_file_content(file_name, user_id)
-
-                tcp_send(self.__sock, RESP.OK, content)
-                LOG.debug("Response (code:%s) on getting requested file was sent to client (:%s...)" % (resp, user_id[:7]))
+                resp_code, sending_data = get_file_content(file_name, user_id)
+                LOG.debug("Response (code:%s) on getting requested file was sent to client (:%s...)" % (resp_code, user_id[:7]))
 
             elif command == COMMAND.CREATE_NEW_FILE:
                 LOG.debug("Client requested to create a new file (client:%s...)" % user_id[:7])
 
                 # print(data, SEP)
                 file_name, access = data.split(SEP)
-                resp = create_file(file_name, user_id, access)
 
-                tcp_send(self.__sock, resp)
-                LOG.debug("Response(code:%s) of file creation was sent to client (:%s...)" % (resp, user_id[:7]))
+                resp_code = create_file(file_name, user_id, access)
+                LOG.debug("Response(code:%s) of file creation was sent to client (:%s...)" % (resp_code, user_id[:7]))
 
                 # TODO: if response is OK and access is public, notify other clients
 
             elif command == COMMAND.DELETE_FILE:
                 LOG.debug("Client requested to delete a file \"%s\" (client:%s...)" % (data, user_id[:7]))
 
-                resp = remove_file(file_path=dir_files + data, user_id=user_id)
-
-                tcp_send(self.__sock, resp)
-                LOG.debug("Response(code:%s) of file deletion was sent to client (:%s...)" % (resp, user_id[:7]))
+                resp_code = remove_file(file_path=dir_files + data, user_id=user_id)
+                LOG.debug("Response(code:%s) of file deletion was sent to client (:%s...)" % (resp_code, user_id[:7]))
 
                 # TODO: if response is OK, notify other clients
 
             elif command == COMMAND.UPDATE_FILE:
                 LOG.debug("Client requested to update a file (client:%s...)" % user_id[:7])
 
-                cleaned_data = data.split(SEP)
-                file_name, change_type, pos = cleaned_data[:3]
+                file_name, change_type, pos, key = parse_change(data)
+                # print file_name, change_type, pos, key
 
-                three_args_length = sum(len(s) for s in cleaned_data[:3]) + 3
-                key = data[three_args_length:]
+                resp_code = update_file(file_name, change_type, pos, key)
+                LOG.debug("Response(code:%s) of change in file was sent to client (:%s...)" % (resp_code, user_id[:7]))
 
-                print file_name, change_type, pos, key
-                resp = update_file(file_name, change_type, pos, key)
+                self.notify_me = False
+                notify_other_clients()
 
-                tcp_send(self.__sock, resp)
-                LOG.debug("Response(code:%s) of change in file was sent to client (:%s...)" % (resp, user_id[:7]))
+            # Send response on requested command
+            res = tcp_send(self.__sock, resp_code, sending_data)
 
-                change = [file_name, change_type, pos, key]
-                changes.append(change)
-
-                self.notify_other_clients()
-
-            elif command == COMMAND.WAITING_FOR_UPDATES:
-                current_thread.waiting_for_update = True
+            # Case: some problem with receiving data
+            if not res:
+                LOG.debug("Client(%s) closed the connection" % (self.__sock.getsockname()))
+                break
 
         close_socket(self.__sock, 'Close client socket.')
 
-
     def notify(self, change):
-        # if self.waiting_for_update:
+        # Send notifications to all other users except the master
+        # if self.notify_me:
         sending_data = SEP.join(change)
-        # sending_data = SEP.join((file_name, change_type, pos, key))
         tcp_send(self.__sock, COMMAND.UPDATE_NOTIFICATION, sending_data)
 
-    def notify_other_clients(self):
-        global sessions
-
-        current_thread = threading.currentThread()
-        print current_thread.name
-
-        while changes:
-            change = changes.pop(0)
-            count = 1
-            for t in sessions:
-                print t.name, count
-                count += 1
-                # if getattr(t, 'notify', False):
-                t.notify(change)
-
+        # Set current thread to "receive notifications" state
+        self.notify_me = True
 
 def main():
     global sessions

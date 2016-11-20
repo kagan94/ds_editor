@@ -19,7 +19,7 @@ from socket import error as socket_error
 
 
 # Extend our PYTHONPATH for working directory----------------------------------
-from sys import path, argv, stdin
+from sys import path, argv
 from os.path import abspath, sep
 a_path = sep.join(abspath(argv[0]).split(sep)[:-1])
 path.append(a_path)
@@ -29,9 +29,9 @@ path.append(a_path)
 SERVER_PORT = 7778
 SERVER_INET_ADDR = '127.0.0.1'
 
-BUFFER_SIZE = 1024 # Receive not more than 1024 bytes per 1 msg
-SEP = "|" # separate command and data in request
-TIMEOUT = 5 # in seconds
+BUFFER_SIZE = 1024  # Receive not more than 1024 bytes per 1 msg
+SEP = "|"  # separate command and data in request
+TIMEOUT = 5  # in seconds
 TERM_CHAR = "|.|"
 
 
@@ -48,11 +48,8 @@ COMMAND = enum(
     GET_FILE='5',
     DELETE_FILE='6',
     UPDATE_FILE='7',
-
-    WAITING_FOR_UPDATES='8',
-    UPDATE_NOTIFICATION='9',
+    UPDATE_NOTIFICATION='8',
 )
-
 
 # Responses
 RESP = enum(
@@ -103,8 +100,12 @@ def tcp_send(sock, command, data=""):
     '''
     # print "data to send: %s, len: %s" % (data, len(data))
     query = str(command) + SEP + str(data) + TERM_CHAR
-    sock.sendall(query)
-    return len(query)
+
+    try:
+        sock.sendall(query)
+        return True
+    except:
+        return False
 
 
 def tcp_receive(sock, buffer_size=BUFFER_SIZE):
@@ -146,7 +147,6 @@ def parse_query(raw_data):
     # print raw_data
     cleaned_data = raw_data.split(SEP)
     command, data = cleaned_data[0], raw_data[len(cleaned_data[0]) + 1:]
-    # print command, data
     return command, data
 
 
@@ -164,3 +164,18 @@ def close_socket(sock, log_msg=""):
 
     if len(log_msg) > 0:
         LOG.debug(log_msg)
+
+
+def parse_change(change):
+    '''
+    This function is used in gui.py, server.py
+    :param change:
+    :return: file_name(str), change_type(enum), pos(str, format "x.y"), key (str, optional argument)
+    '''
+    cleaned_data = change.split(SEP)
+    file_name, change_type, pos = cleaned_data[:3]
+
+    three_args_length = sum(len(s) for s in cleaned_data[:3]) + 3
+    key = change[three_args_length:]
+
+    return file_name, change_type, pos, key

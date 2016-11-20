@@ -11,11 +11,10 @@ LOG.info('Client-side started working...')
 # Imports----------------------------------------------------------------------
 import ConfigParser as CP
 import os
-from threading import Thread, Condition, Lock, currentThread
+from threading import Thread, Condition, Lock
 from gui import *
 from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
-from protocol import tcp_send, tcp_receive, \
-                     COMMAND, RESP, ACCESS, SEP, parse_query, \
+from protocol import COMMAND, RESP, ACCESS, SEP, parse_query, \
                      SERVER_PORT, SERVER_INET_ADDR, close_socket, TERM_CHAR, BUFFER_SIZE
 
 
@@ -40,7 +39,6 @@ class Client(object):
         try:
             s.connect((SERVER_INET_ADDR, SERVER_PORT))
             self.s = s
-            # self.sync_user_id()
         except socket_error as (code, msg):
             if code == 10061:
                 LOG.error('Socket error occurred. Server does not respond.')
@@ -184,9 +182,6 @@ class Client(object):
 
         resp_code, _ = self.__sync_request(COMMAND.UPDATE_FILE, data)
 
-        # tcp_send(self.s, COMMAND.UPDATE_FILE, data)
-
-        # resp_code, _ = parse_query(tcp_receive(self.s))
         LOG.debug("Received response on updating file (code:%s)" % resp_code)
 
         # Unblock window in GUI, if response is OK.
@@ -196,7 +191,6 @@ class Client(object):
             self.gui.unblock_text_window()
 
         return resp_code
-
 
     # Sync/Async functions ===============================================================
     def __protocol_rcv(self, message):
@@ -271,11 +265,10 @@ class Client(object):
         m = ''
         while 1:
             try:
-                # print "receive waiting.."
                 # Receive one block of data according to receive buffer size
                 block = self.s.recv(buffer_size)
-                # print repr(block)
                 m += block
+
             except socket_error as (code, msg):
                 if code == 10054:
                     LOG.error('Server is not available.')
@@ -292,12 +285,9 @@ class Client(object):
         '''Network Receiver/Message Processor loop'''
         LOG.info('Falling to receiver loop ...')
         while 1:
-            # print "want to receive msg.."
             m = self.__tcp_receive()
-            # m = tcp_receive(self.s)
-            # print "Msg received %s" % m
 
-            if not m and len(m) <= 0:
+            if not m or len(m) <= 0:
                 break
 
             self.__protocol_rcv(m)
@@ -312,76 +302,13 @@ class Client(object):
                 if len(self.__rcv_async_msgs) <= 0:
                     self.__rcv_async_msgs_lock.wait()
                 msg = self.__rcv_async_msgs.pop(0)
+                _, change = parse_query(msg)
 
+                self.gui.update_from_another_client(change)
             LOG.info('Server Notification: %s' % msg)
 
 
 # Main part of client application
-def start_gui(s, user_id):
-    '''
-    :param s: client socket (to communicate with a server)
-    :return: -
-    '''
-
-
-    # List of accessible files
-    files_to_edit = get_files_to_edit(s)
-    # print(files_to_edit)
-
-
-    # File deletion
-    file_to_delete = "123.txt"
-    del_res = delete_file(s, file_to_delete)
-
-
-    # File creation
-    # access = ACCESS.PUBLIC
-    file_name, access = "new_file_3nd.txt", ACCESS.PRIVATE
-
-    # Response on creation of new file
-    new_file_res = create_new_file(s, file_name, access)
-
-    if new_file_res == RESP.OK:
-        LOG.info("Server created a new file successfully")
-
-    elif new_file_res == RESP.FILE_ALREADY_EXISTS:
-        LOG.error("File with requested name already exists")
-
-    elif new_file_res == RESP.FAIL:
-        LOG.error("Server couldn't create a new file with requested name")
-
-    # TODO: Update file list in GUI if the result of file creation/deletion is OK, otherwise show error
-
-
-    # TODO: Create asynchronous receiving to receive notification about file updating
-
-
-    # Just testing R-R
-    # tcp_send(s, "1|something")
-    # resp = tcp_receive(s)
-    # print "Response 1: %s, msg'len %s" % (resp, len(resp))
-    #
-    # # Test 2
-    # tcp_send(s, "55|ccccccp")
-    # print "Response 2: %s" % tcp_receive(s)
-    #
-    # # Test 3
-    # tcp_send(s, "66|aaa")
-    # print "Response 3: %s" % tcp_receive(s)
-
-
-    # while True:
-    #     print(2)
-
-# def start_updater(user_id):
-#     sock = __connect()
-#     while True:
-#         tcp_send(sock, COMMAND.WAITING_FOR_UPDATES)
-#         res = tcp_receive(sock)
-#         _, text = parse_query(res)
-#         name_file, t = parse_query(text)
-
-
 def main():
     root = Tkinter.Tk(className="Text editor (:")
     client = Client()
@@ -412,16 +339,7 @@ def main():
 
         # Blocks until the thread finished the work.
         main_app_thread.join()
-        # notifications_thread.join()
-
-    # If user_id doesn't exist, server creates it.
-    # Otherwise client notifies the server about its user_id
-    # user_id = get_user_id(s)
-
-    # # Start GUI and main program
-    # start_gui(s, user_id)
-    # updater_thread = threading.Thread(target=start_updater, args=(user_id,))
-    # updater_thread.start()
+        notifications_thread.join()
 
     # Close socket it there're some problems
     if client.s:

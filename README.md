@@ -1,4 +1,4 @@
-# Online editor 0.0.1
+# Online editor 0.0.2
 ## Done:
 * Basic functions: send/receive
 * server generates user_id and send it back to the clien (if neccessary)
@@ -19,12 +19,12 @@
 * if client requested to update the doc. Save the changes on the server (server)
 * find how to recognize that user pushed "delete" key (GUI)
 * action to create a new file (GUI)
+* create asynchronous receiving to receive notification about file updating (in process) (Client)
+* send request to other clients last change in the file (queue that collect changes has name "changes")
 
 ## TODO Client:
-* create asynchronous receiving to receive notification about file updating (in process)
 
 ## TODO Server:
-* send request to other clients last change in the file (queue that collect changes has name "changes")
 * notify clients if the file was deleted
 * notify clients if the file was created with a public access
 
