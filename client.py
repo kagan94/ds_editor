@@ -157,12 +157,22 @@ class Client(object):
     def update_file_on_server(self, file_name, change_type, pos, key=""):
         LOG.debug("Request to update file on server \"%s\", (change_type:%s, pos:%s)" % (file_name, change_type, pos))
 
+        # Block window in GUI, until we receive a response
+        self.gui.block_text_window()
+
         data = SEP.join([file_name, change_type, pos, key])
         tcp_send(self.s, COMMAND.UPDATE_FILE, data)
 
         resp_code, _ = parse_query(tcp_receive(self.s))
         LOG.debug("Received response on updating file (code:%s)" % resp_code)
 
+        # Unblock window in GUI, if response is OK.
+        # Also update status bar
+        self.gui.set_notification_status("change in file", resp_code)
+        if resp_code == RESP.OK:
+            self.gui.unblock_text_window()
+
+        return resp_code
 
 # Main part of client application
 def start_gui(s, user_id):

@@ -124,6 +124,7 @@ class GUI(object):
                 self.client.update_file_on_server(current_file, CHANGE_TYPE.INSERT, pos_change, key=char)
                 print "pressed", char, pos_change, event.keysym
 
+
     def onEnterPress(self, event):
         current_file = self.selected_file()
 
@@ -210,9 +211,8 @@ class GUI(object):
 
     def onExit(self):
         # if tkMessageBox.askokcancel("Quit", "Do you really want to quit?"):
-        f = open('test.txt','w')
-        f.write(self.text.get(1.0, END))
-        f.close()
+        # save opened text in window
+        self.save_opened_text()
         self.root.destroy()
 
     # Functions to work with interface ==================================================================
@@ -299,6 +299,6 @@ class GUI(object):
 
     def set_notification_status(self, message, err_code=None):
         if err_code:
-            message += ". " + error_code_to_string(err_code)
+            message += ".\n" + error_code_to_string(err_code)
 
         self.status.set("Last action: " + message)
