@@ -15,22 +15,25 @@
 * added comparison of local file (if exist) and original content on the server (GUI file, client side)
 * store all docs in the file folder (personal for client, and personal for server)
 * connect msg box with file name and checkbox to this function (GUI)
+* send the request to the server with last change in the file (can be delete/insert/enter/backspace operation) (client side)
+* if client requested to update the doc. Save the changes on the server (server)
+* find how to recognize that user pushed "delete" key (GUI)
+* action to create a new file (GUI)
 
 ## TODO Client:
-* send the request to the server with changes in the file
 * create asynchronous receiving to receive notification about file updating (in process)
 
 ## TODO Server:
-* if client requested to update the doc. Save the changes on the server and send request to other clients to update version of file (almost done)
+* send request to other clients last change in the file (queue that collect changes has name "changes")
 * notify clients if the file was deleted
 * notify clients if the file was created with a public access
 
 
 ## TODO GUI:
+* update file list when the file was created (request from the server that new file is accessible)
 * update file list when the file was deleted
-* action to create a new file
 * action to delete a file
-* find how to recognize that user pushed "delete" key?
+* create a window (by click on check changes) to show the changes between local copy of file and file on server
 
 
 ## !!! Do not do:

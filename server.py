@@ -22,7 +22,7 @@ changes = []
 
 current_path = os.path.abspath(os.path.dirname(__file__))
 config_file_path = os.path.join(current_path, "server_config.ini")
-dir_files = os.path.join(os.getcwd(), "files")
+dir_files = os.path.join(os.getcwd(), "server_files")
 
 
 # Functions to work with config -----------------------------------
@@ -220,26 +220,24 @@ def update_file(file_name, change_type, pos, key=""):
     change = [file_name, change_type, pos, key]
     changes.append(change)
 
-    # TODO: rewrite file
+    # Strategy:
+    # We read existing file, make some changes, and save this file
 
     with open(file_path, "r") as f:
-        lines = f.read().splitlines()
+        lines = f.read().split("\n")
 
-    try:
-        line = lines[row - 1]
-        row_shifted = False
-    # Case: Enter pressed, but file still isn't updated
-    except:
-        row -= 1
-        line = lines[row - 1]
-        row_shifted = True
+    # print "============="
+    # print line, row, i, len(lines), lines, len(line)
+
+    # Notice: row - 1 because in tkinter rows start from index "1"
+    line = lines[row - 1]
 
     if change_type == CHANGE_TYPE.DELETE:
-        # Case: Delete the next char
-        if i + 1 < len(line):
+        # Case: Delete the next existing char
+        if i + 1 <= len(line):
             lines[row - 1] = line[:i] + line[i + 1:]
 
-        # Case: need to delete next line
+        # Case: need to delete \n and append next line
         else:
             # Next line might not exist, that's why check it
             try:
@@ -249,7 +247,8 @@ def update_file(file_name, change_type, pos, key=""):
 
             # Append next line to previous line
             if next_line is not None:
-                lines[row - 1] = next_line
+                lines[row - 1] += next_line
+                lines.pop(row)  # delete appended line
 
     elif change_type == CHANGE_TYPE.BACKSPACE:
         # Case: delete previous character
@@ -264,30 +263,21 @@ def update_file(file_name, change_type, pos, key=""):
             lines.pop(row - 1)
 
     elif change_type == CHANGE_TYPE.ENTER:
-        # Split and separate 2 lines
-
-        print lines[row - 1]
-
-        # TODO: Solve problem with indexes!!!
+        # Split text (if needed) and separate 2 lines
         head, tail = line[:i], line[i:]
+
+        lines[row - 1] = head
+
+        # Case: user pressed enter in the text
         if row < len(lines):
-            lines[row - 1] = head
-            lines.insert(row - 1, tail)
-
-        elif row == len(lines):
             lines.insert(row, tail)
-            lines[row] = head
 
-        # elif i == 0 and len(line) == 0:
-        #     lines.insert(row - 1, "")
-
-        # if not row_shifted:
-
-        print lines, row, i
+        # Case: user pressed enter on the last line (maybe even not in the end of text)
+        elif row == len(lines):
+            lines.append(tail)
 
     elif change_type == CHANGE_TYPE.INSERT:
         lines[row - 1] = line[:i] + key + line[i:]
-        print lines[row - 1], lines
 
     # Write new changes into file
     with open(file_path, "w") as f:
