@@ -100,7 +100,7 @@ class GUI(object):
         return tuple(map(int, str(self.text.index(index)).split(".")))
 
     def onKeyPress(self, event):
-        current_file = self.selected_file()
+        current_file = self.previously_selected_file
         # inserted character and position of change
         char, pos_change = event.char, str(self.text.index("insert"))
 
@@ -126,10 +126,10 @@ class GUI(object):
 
 
     def onEnterPress(self, event):
-        current_file = self.selected_file()
+        current_file = self.previously_selected_file
 
         # If any file was chosen
-        if self.selected_file():
+        if current_file:
             char, pos_change = event.char, str(self.text.index("insert"))
 
             # "Enter" was pressed
@@ -317,9 +317,7 @@ class GUI(object):
         file_to_change, change_type, pos, key = parse_change(change)
 
         # And check whether the selected file matches with file in change
-        selected_file = self.selected_file()
-
-        if selected_file and selected_file == file_to_change:
+        if self.previously_selected_file and self.selected_file == file_to_change:
             # Depending on change, do the change
 
             if change_type == CHANGE_TYPE.DELETE:
