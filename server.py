@@ -11,14 +11,15 @@ LOG = logging.getLogger()
 
 # Imports----------------------------------------------------------------------
 from protocol import SERVER_PORT, SERVER_INET_ADDR, tcp_send, tcp_receive, close_socket, \
-                     COMMAND, RESP, ACCESS, SEP, parse_query
+                     COMMAND, RESP, ACCESS, CHANGE_TYPE, SEP, parse_query
 from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
 import threading, os
 import uuid  # for generating unique uuid
 import ConfigParser as CP # for server settings
 
-# global lock
 lock = threading.Lock()
+changes = []
+
 current_path = os.path.abspath(os.path.dirname(__file__))
 config_file_path = os.path.join(current_path, "server_config.ini")
 dir_files = os.path.join(os.getcwd(), "files")
@@ -199,9 +200,102 @@ def get_file_content(file_name, user_id):
     return resp, content
 
 
-def update_file(file_name, data):
-    pass
+def update_file(file_name, change_type, pos, key=""):
+    '''
+    :param file_name: (string)
+    :param change_type: (enum) can be DELETE/BACKSPACE/INSERT/ENTER
+    :param pos: position of change in the text in format x.y
+    :param key: (string) - optional, it's letter
+    :return:
+    '''
+    global dir_files, changes, lock
+
+    file_path = os.path.join(dir_files, file_name)
+    resp = RESP.OK
+    row, i = list(map(int, pos.split(".")))  # i-index(column)
+
+    lock.acquire()
+
+    # Add change from client into the queue "changes"
+    change = [file_name, change_type, pos, key]
+    changes.append(change)
+
     # TODO: rewrite file
+
+    with open(file_path, "r") as f:
+        lines = f.read().splitlines()
+
+    try:
+        line = lines[row - 1]
+        row_shifted = False
+    # Case: Enter pressed, but file still isn't updated
+    except:
+        row -= 1
+        line = lines[row - 1]
+        row_shifted = True
+
+    if change_type == CHANGE_TYPE.DELETE:
+        # Case: Delete the next char
+        if i + 1 < len(line):
+            lines[row - 1] = line[:i] + line[i + 1:]
+
+        # Case: need to delete next line
+        else:
+            # Next line might not exist, that's why check it
+            try:
+                next_line = lines[row]
+            except IndexError:
+                next_line = None
+
+            # Append next line to previous line
+            if next_line is not None:
+                lines[row - 1] = next_line
+
+    elif change_type == CHANGE_TYPE.BACKSPACE:
+        # Case: delete previous character
+        if i - 1 >= 0:
+            lines[row - 1] = line[:i - 1] + line[i:]
+
+        # Case: delete previous line if exist
+        elif row - 1 > 0 and i - 1 < 0:
+            lines[row - 2] += lines[row - 1]
+
+            # Delete appended line
+            lines.pop(row - 1)
+
+    elif change_type == CHANGE_TYPE.ENTER:
+        # Split and separate 2 lines
+
+        print lines[row - 1]
+
+        # TODO: Solve problem with indexes!!!
+        head, tail = line[:i], line[i:]
+        if row < len(lines):
+            lines[row - 1] = head
+            lines.insert(row - 1, tail)
+
+        elif row == len(lines):
+            lines.insert(row, tail)
+            lines[row] = head
+
+        # elif i == 0 and len(line) == 0:
+        #     lines.insert(row - 1, "")
+
+        # if not row_shifted:
+
+        print lines, row, i
+
+    elif change_type == CHANGE_TYPE.INSERT:
+        lines[row - 1] = line[:i] + key + line[i:]
+        print lines[row - 1], lines
+
+    # Write new changes into file
+    with open(file_path, "w") as f:
+        f.write("\n".join(lines))
+
+    lock.release()
+
+    return resp
 
 
 def remove_file(file_path, user_id):
@@ -245,7 +339,7 @@ def remove_file(file_path, user_id):
     return resp
 
 
-# Main function  and its handler ---------------------------------
+# Main handler ---------------------------------------------------
 def handler(c_socket):
     '''
     :param c_socket: client socket
@@ -325,9 +419,20 @@ def handler(c_socket):
         elif command == COMMAND.UPDATE_FILE:
             LOG.debug("Client requested to update a file (client:%s...)" % user_id[:7])
 
-            file_name, text = data.split(SEP)
-            update_file(file_name, text)
-            notify_clients(file_name, text)
+            cleaned_data = data.split(SEP)
+            file_name, change_type, pos = cleaned_data[:3]
+
+            three_args_length = sum(len(s) for s in cleaned_data[:3]) + 3
+            key = data[three_args_length:]
+
+            print file_name, change_type, pos, key
+            resp = update_file(file_name, change_type, pos, key)
+
+            tcp_send(c_socket, resp)
+            LOG.debug("Response(code:%s) of change in file was sent to client (:%s...)" % (resp, user_id[:7]))
+
+            # TODO: Notify all clients about changes
+            # notify_clients(file_name, text)
 
         elif command == COMMAND.WAITING_FOR_UPDATES:
             current_thread.waiting_for_update = True

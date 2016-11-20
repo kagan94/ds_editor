@@ -48,12 +48,9 @@ COMMAND = enum(
     GET_FILE='5',
     DELETE_FILE='6',
     UPDATE_FILE='7',
+
     WAITING_FOR_UPDATES='8',
     UPDATE_NOTIFICATION='9',
-    # From Server to the client
-    # RIGHT = 3,
-    # LEFT = 4,
-    # NONE = 0
 )
 
 
@@ -69,12 +66,35 @@ RESP = enum(
 
 # Access to the file
 ACCESS = enum(
-    PUBLIC = '0',
-    PRIVATE = '1'
+    PUBLIC='0',
+    PRIVATE='1'
+)
+
+CHANGE_TYPE = enum(
+    DELETE='0',
+    BACKSPACE='1',
+    ENTER='2',
+    INSERT='3'
 )
 
 
 # Main functions ---------------------------------------------------------------
+def error_code_to_string(err_code):
+    err_text = ""
+
+    if err_code == RESP.OK:
+        err_text = "No errors"
+    elif err_code == RESP.FAIL:
+        err_text = "Bad result."
+    elif err_code == RESP.PERMISSION_ERROR:
+        err_text = "Permissions error."
+    elif err_code == RESP.FILE_ALREADY_EXISTS:
+        err_text = "Requested file already exists."
+    elif err_code == RESP.FILE_DOES_NOT_EXIST:
+        err_text = "Requested file doesn't exist."
+    return err_text
+
+
 def tcp_send(sock, command, data=""):
     '''  TCP send request
     @param sock: TCP socket

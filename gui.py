@@ -1,12 +1,33 @@
 import Tkinter, tkFileDialog, tkMessageBox, ttk, os
 from Tkinter import *
 from ScrolledText import *
-from protocol import RESP
-import difflib
+from protocol import RESP, CHANGE_TYPE, error_code_to_string
+import tkSimpleDialog, difflib
+
 
 # local copies of files on the client side
 current_path = os.path.abspath(os.path.dirname(__file__))
 dir_local_files = os.path.join(current_path, "client_local_files")
+
+
+class DialogAskFileName(tkSimpleDialog.Dialog):
+    ''' Window that asks user to type new file name and its access '''
+    def body(self, master):
+        self.root = master
+        self.file_name = None
+
+        Label(master, text="File name").grid(row=1, sticky=W)
+        self.name = Entry(master)
+        self.name.grid(row=1, column=1)
+
+        instructions = Label(master, text="Make file private?").grid(row=0)
+        self.answer_return = IntVar()
+        self.answer = Checkbutton(master, variable=self.answer_return)
+        self.answer.grid(row=0, column=1)
+
+    def apply(self):
+        self.access = (self.answer_return.get())
+        self.file_name = (self.name.get())
 
 
 class GUI(object):
@@ -23,7 +44,7 @@ class GUI(object):
         self.client = client
 
         # load initial setting
-        self.text = ScrolledText(self.root, width=70, height=30)
+        self.text = ScrolledText(self.root, width=50, height=15)
         self.text.grid(row=0, column=2)
 
         # Loading the list of files in menu
@@ -39,18 +60,28 @@ class GUI(object):
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=1)
 
-        self.upload_list_of_accessible_files_into_menu()
+        # Status
+        self.status = StringVar()
+        self.label = Label(self.root, textvariable=self.status)
+        self.set_notification_status("-")
+
+        self.label.grid(column=0, columnspan=2, sticky=(W))
+
+        # Button check changes
+        btn = Button(self.root, text="Check Changes")
+        btn.grid(column=2, row=2, sticky=(E))
+        # TODO: create a new window on click if there'we some changes
 
         # Main menu in GUI ----------------------------------------------------------------------------
         self.menu = Menu(self.root)
         self.root.config(menu=self.menu)
 
-        self.file_menu = Menu(self.menu)
-        self.menu.add_cascade(label="File", menu=self.file_menu)
-        self.file_menu.add_command(label="New", command=self.onFileCreation)
-        # self.file_menu.add_command(label="Open", command=self.onOpenFile)
-        self.file_menu.add_separator()
-        self.file_menu.add_command(label="Exit", command=self.onExit)
+        self.menu.add_command(label="New file", command=self.onFileCreation)
+        # self.menu.add_command(label="Open", command=self.onOpenFile)
+        self.menu.add_command(label="Exit", command=self.onExit)
+
+        # Update list of accessible files
+        self.upload_list_of_accessible_files_into_menu()
 
         self.block_text_window()
 
@@ -64,53 +95,65 @@ class GUI(object):
 
     # Triggers in the GUI window ========================================================================
     # ========= Triggers in text area ===================================================================
+
     def get_index(self, index):
         return tuple(map(int, str(self.text.index(index)).split(".")))
 
     def onKeyPress(self, event):
-        global count
+        current_file = self.selected_file()
+        # inserted character and position of change
+        char, pos_change = event.char, str(self.text.index("insert"))
 
-        # self.count += 1
-        #
-        # if self.count == 5:
-        #     self.text.insert(1.1, "click here!")
-        c, pos = event.char, self.get_index("insert")
+        # If any file was chosen
+        if current_file:
+            # self.count += 1
+            # if self.count == 5:
+            #     self.text.insert(1.1, "click here!")
+            # c, pos = event.char, self.get_index("insert")
 
-        if event.keysym == "BackSpace":
-            print "backspace", pos
+            if event.keysym == "BackSpace":
+                self.client.update_file_on_server(current_file, CHANGE_TYPE.BACKSPACE, pos_change)
+                print "backspace", pos_change
 
-        elif event.keysym == "Delete":
-            print "Delete pressed", pos
+            elif event.keysym == "Delete":
+                self.client.update_file_on_server(current_file, CHANGE_TYPE.DELETE, pos_change)
+                print "Delete pressed", pos_change
+                # self.text.delete(float(pos_change[0]) + .1)
 
-        elif c != "":
-            print "pressed", c, pos, event.keysym
+            elif char != "":
+                self.client.update_file_on_server(current_file, CHANGE_TYPE.INSERT, pos_change, key=char)
+                print "pressed", char, pos_change, event.keysym
 
     def onEnterPress(self, event):
-        c = event.char
+        current_file = self.selected_file()
 
-        # "Enter" was pressed
-        if c == "\r" or "\n":
-            print repr("\n"), self.get_index("insert")
-        else:
-            print(c)
+        # If any file was chosen
+        if self.selected_file():
+            char, pos_change = event.char, str(self.text.index("insert"))
+
+            # "Enter" was pressed
+            if char in ["\r", "\n"]:
+                self.client.update_file_on_server(current_file, CHANGE_TYPE.ENTER, pos_change)
+                print repr("\n"), self.get_index("insert")
+            else:
+                print(char)
 
     # ========= Other triggers ==========================================================================
     def onFileSelection(self, event):
-        w = event.widget
-        index = int(w.curselection()[0])
-        selected_file = w.get(index)
+        selected_file = self.selected_file()
 
         if selected_file and (not self.previously_selected_file or self.previously_selected_file != selected_file):
-            print 'You selected item "%s"' % selected_file
+            # Update notification bar
+            self.set_notification_status("selected file " + selected_file)
 
             # Save previously opened text file in local storage
             self.save_opened_text()
 
             # Download selected file
-            resp, content = self.client.get_file_on_server(selected_file)
+            resp_code, content = self.client.get_file_on_server(selected_file)
 
             # Case: File was successfully downloaded
-            if resp == RESP.OK:
+            if resp_code == RESP.OK:
                 # Unblock and update text window
                 self.unblock_text_window()
                 self.replace_text(content)
@@ -122,30 +165,38 @@ class GUI(object):
             else:
                 self.clear_text()
                 self.block_text_window()
-                print "Error occurred while tried to download file"
+
+            # Update notification bar
+            self.set_notification_status("download file", resp_code)
+            # print "Error occurred while tried to download file"
 
         self.previously_selected_file = selected_file
 
     def onFileCreation(self):
-        file_name = "test.txt"
+        ask_file_dialog = DialogAskFileName(self.root)
 
-        access = 1 # Private
-        access = 0 # Public
+        # Fetch values from Dialog form
+        file_name = ask_file_dialog.file_name
 
-        # TODO: connect msg box with file name and checkbox to this function
+        # Check if the user didn't press cancel
+        if file_name:
+            access = str(ask_file_dialog.access)  # Private(1) or Public(0)
 
-        resp_code = self.client.create_new_file(file_name, access)
+            # Send request to server to create file
+            resp_code = self.client.create_new_file(file_name, access)
 
-        if resp_code == RESP.OK:
-            self.save_opened_text()
+            if resp_code == RESP.OK:
+                self.save_opened_text()
 
-            # Create a new empty file
-            with open(file_name, 'w'):
-                pass
+                # Create a new empty file
+                with open(file_name, 'w'):
+                    pass
 
-            self.files_list.insert(END, file_name)
-        else:
-            print "Error happened with file creation. (code: %s)" % resp_code
+                self.files_list.insert(END, file_name)
+
+            # Update notification bar
+            self.set_notification_status("File creation", resp_code)
+
     # def onOpenFile(self):
     #     tk_file = tkFileDialog.askopenfile(parent=root, mode='rb', title='Select a file')
     #
@@ -195,10 +246,13 @@ class GUI(object):
             print "Local copy was not found"
 
     def upload_list_of_accessible_files_into_menu(self):
-        accessible_files = self.client.get_accessible_files()
+        resp_code, accessible_files = self.client.get_accessible_files()
 
         for filename in accessible_files:
             self.files_list.insert(END, filename)
+
+        # Update notification bar
+        self.set_notification_status("List of files", resp_code)
 
     # Save previously opened text file in local storage
     def save_opened_text(self):
@@ -231,3 +285,20 @@ class GUI(object):
 
     def unblock_text_window(self):
         self.text.config(state=NORMAL, background="white")
+
+    def selected_file(self):
+        widget = self.files_list
+
+        try:
+            index = int(widget.curselection()[0])
+            selected_file = widget.get(index)
+        except:
+            selected_file = None
+
+        return selected_file
+
+    def set_notification_status(self, message, err_code=None):
+        if err_code:
+            message += ". " + error_code_to_string(err_code)
+
+        self.status.set("Last action: " + message)

@@ -14,6 +14,7 @@
 * show list of accessible files (GUI)
 * added comparison of local file (if exist) and original content on the server (GUI file, client side)
 * store all docs in the file folder (personal for client, and personal for server)
+* connect msg box with file name and checkbox to this function (GUI)
 
 ## TODO Client:
 * send the request to the server with changes in the file
