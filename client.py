@@ -94,7 +94,7 @@ class Client(object):
         else:
             files = []
 
-        return files
+        return result, files
 
     def get_file_on_server(self, file_name):
         '''
@@ -153,6 +153,15 @@ class Client(object):
             # LOG.debug("Client File \"%s\" was not deleted..." % file_name)
 
         return result
+
+    def update_file_on_server(self, file_name, change_type, pos, key=""):
+        LOG.debug("Request to update file on server \"%s\", (change_type:%s, pos:%s)" % (file_name, change_type, pos))
+
+        data = SEP.join([file_name, change_type, pos, key])
+        tcp_send(self.s, COMMAND.UPDATE_FILE, data)
+
+        resp_code, _ = parse_query(tcp_receive(self.s))
+        LOG.debug("Received response on updating file (code:%s)" % resp_code)
 
 
 # Main part of client application
@@ -225,7 +234,7 @@ def main():
     root = Tkinter.Tk(className="Text editor (:")
     client = Client()
 
-    # Connect until we connect to the server (limit 5 tries)
+    # Try to connect until we exactly connect to the server (limit 5 tries)
     try_num, tries_number = 0, 5
     while not client.s and try_num != tries_number:
         client.connect_to_server()
