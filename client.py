@@ -297,7 +297,7 @@ class Client(object):
             # m = tcp_receive(self.s)
             # print "Msg received %s" % m
 
-            if len(m) <= 0:
+            if not m and len(m) <= 0:
                 break
 
             self.__protocol_rcv(m)

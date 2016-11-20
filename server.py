@@ -13,12 +13,12 @@ LOG = logging.getLogger()
 from protocol import SERVER_PORT, SERVER_INET_ADDR, tcp_send, tcp_receive, close_socket, \
                      COMMAND, RESP, ACCESS, CHANGE_TYPE, SEP, parse_query
 from socket import AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, socket, error as socket_error
-import threading, os
-from threading import Lock
+import os, threading
 import uuid  # for generating unique uuid
 import ConfigParser as CP # for server settings
 
 lock = threading.Lock()
+sessions = []
 changes = []
 
 current_path = os.path.abspath(os.path.dirname(__file__))
@@ -332,14 +332,8 @@ class EditSession(threading.Thread):
         threading.Thread.__init__(self)
         self.__sock = client_sock
         self.__addr = client_sock_address
-        self.__send_lock = Lock()
+        self.__send_lock = threading.Lock()
         self.__filename = None
-
-    def notify(self, file_name, change_type, pos, key):
-        if self.waiting_for_update:
-            sending_data = SEP.join((file_name, change_type, pos, key))
-            tcp_send(self.__sock, COMMAND.UPDATE_NOTIFICATION, sending_data)
-
 
     def run(self):
         global dir_files, lock
@@ -428,9 +422,10 @@ class EditSession(threading.Thread):
                 tcp_send(self.__sock, resp)
                 LOG.debug("Response(code:%s) of change in file was sent to client (:%s...)" % (resp, user_id[:7]))
 
-                for t in threading.enumerate():
-                    if getattr(t, 'notify', False):
-                        t.notify(file_name, change_type, pos, key)
+                change = [file_name, change_type, pos, key]
+                changes.append(change)
+
+                self.notify_other_clients()
 
             elif command == COMMAND.WAITING_FOR_UPDATES:
                 current_thread.waiting_for_update = True
@@ -438,8 +433,31 @@ class EditSession(threading.Thread):
         close_socket(self.__sock, 'Close client socket.')
 
 
+    def notify(self, change):
+        # if self.waiting_for_update:
+        sending_data = SEP.join(change)
+        # sending_data = SEP.join((file_name, change_type, pos, key))
+        tcp_send(self.__sock, COMMAND.UPDATE_NOTIFICATION, sending_data)
+
+    def notify_other_clients(self):
+        global sessions
+
+        current_thread = threading.currentThread()
+        print current_thread.name
+
+        while changes:
+            change = changes.pop(0)
+            count = 1
+            for t in sessions:
+                print t.name, count
+                count += 1
+                # if getattr(t, 'notify', False):
+                t.notify(change)
+
 
 def main():
+    global sessions
+
     LOG.info('Application started and server socket created')
 
     s = socket(AF_INET, SOCK_STREAM)
@@ -452,8 +470,6 @@ def main():
     # If we want to limit # of connections, then change 0 to # of possible connections
     s.listen(0)
 
-    threads = []
-    sessions = []
     while True:
         try:
             # Client connected
