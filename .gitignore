@@ -3,3 +3,6 @@
 .idea/vcs.xml
 *.xml
 *.pyc
+*.swp
+*.txt
+

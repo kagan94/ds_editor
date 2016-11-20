@@ -14,6 +14,7 @@ from protocol import SERVER_PORT, SERVER_INET_ADDR, tcp_send, tcp_receive, close
                      COMMAND, RESP, ACCESS, CHANGE_TYPE, SEP, parse_query
 from socket import AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, socket, error as socket_error
 import threading, os
+from threading import Lock
 import uuid  # for generating unique uuid
 import ConfigParser as CP # for server settings
 
@@ -122,11 +123,6 @@ def remove_option_from_config(config, section, option):
         LOG.error("Option(%s) cannot be deleted" % option)
 
 
-def notify_clients(file_name, data):
-    for t in threading.enumerate():
-        if getattr(t, 'waiting_for_update', False):
-            sending_data = SEP.join((file_name, data))
-            tcp_send(t.socket, COMMAND.UPDATE_NOTIFICATION, sending_data)
 
 
 # Main functions -------------------------------------------------
@@ -330,104 +326,117 @@ def remove_file(file_path, user_id):
 
 
 # Main handler ---------------------------------------------------
-def handler(c_socket):
-    '''
-    :param c_socket: client socket
-    :return: -
-    '''
-    global dir_files, lock
+class EditSession(threading.Thread):
 
-    current_thread = threading.current_thread()
-    connection_n = current_thread.getName().split("-")[1]
-    current_thread.socket = c_socket
+    def __init__(self, client_sock, client_sock_address):
+        threading.Thread.__init__(self)
+        self.__sock = client_sock
+        self.__addr = client_sock_address
+        self.__send_lock = Lock()
+        self.__filename = None
 
-    LOG.debug("Client %s connected:" % connection_n)
-    LOG.debug("Client's socket info: %s:%d’:" % c_socket.getsockname())
+    def notify(self, file_name, change_type, pos, key):
+        if self.waiting_for_update:
+            sending_data = SEP.join((file_name, change_type, pos, key))
+            tcp_send(self.__sock, COMMAND.UPDATE_NOTIFICATION, sending_data)
 
-    user_id = ""
 
-    while True:
-        command, data = parse_query(tcp_receive(c_socket))
-        LOG.debug("Client's request (%s) - %s|%s" % (c_socket.getsockname(), command, data[:10] + "..."))
+    def run(self):
+        global dir_files, lock
 
-        current_thread.waiting_for_update = False
+        current_thread = threading.current_thread()
+        connection_n = current_thread.getName().split("-")[1]
+        current_thread.socket = self.__sock
 
-        if command == COMMAND.GENERATE_USER_ID:
-            # make a unique user_id based on the host ID and current time
-            user_id = uuid.uuid1()
-            tcp_send(c_socket, RESP.OK, user_id)
-            LOG.debug("Server generated a new user_id (%s) and sent it to client" % user_id)
+        LOG.debug("Client %s connected:" % connection_n)
+        LOG.debug("Client's socket info: %s:%d’:" % self.__sock.getsockname())
 
-        elif command == COMMAND.NOTIFY_ABOUT_USER_ID:
-            user_id = data
-            LOG.debug("Client sent his existing user_id (%s)" % user_id)
+        user_id = ""
 
-            tcp_send(c_socket, RESP.OK)
-            LOG.debug("Empty request with acknowledgement about receiving user_id was sent to client")
+        while True:
+            command, data = parse_query(tcp_receive(self.__sock))
+            LOG.debug("Client's request (%s) - %s|%s" % (self.__sock.getsockname(), command, data[:10] + "..."))
 
-        elif command == COMMAND.LIST_OF_ACCESIBLE_FILES:
-            LOG.debug("Client requested to get a list of available files (client:%s...)" % user_id[:7])
+            current_thread.waiting_for_update = False
 
-            all_files = [f for f in os.listdir(dir_files) if os.path.isfile(os.path.join(dir_files, f))]
-            limited_files = limited_files_from_config(user_id)
-            available_files = set(all_files) - set(limited_files)
+            if command == COMMAND.GENERATE_USER_ID:
+                # make a unique user_id based on the host ID and current time
+                user_id = uuid.uuid1()
+                tcp_send(self.__sock, RESP.OK, user_id)
+                LOG.debug("Server generated a new user_id (%s) and sent it to client" % user_id)
 
-            tcp_send(c_socket, RESP.OK, SEP.join(available_files))
-            LOG.debug("List of available files was sent to client (:%s...)" % user_id[:7])
+            elif command == COMMAND.NOTIFY_ABOUT_USER_ID:
+                user_id = data
+                LOG.debug("Client sent his existing user_id (%s)" % user_id)
 
-        elif command == COMMAND.GET_FILE:
-            file_name = data
-            LOG.debug("Client requested to get file \"%s\" (client:%s...)" % (file_name, user_id[:7]))
+                tcp_send(self.__sock, RESP.OK)
+                LOG.debug("Empty request with acknowledgement about receiving user_id was sent to client")
 
-            resp, content = get_file_content(file_name, user_id)
+            elif command == COMMAND.LIST_OF_ACCESIBLE_FILES:
+                LOG.debug("Client requested to get a list of available files (client:%s...)" % user_id[:7])
 
-            tcp_send(c_socket, RESP.OK, content)
-            LOG.debug("Response (code:%s) on getting requested file was sent to client (:%s...)" % (resp, user_id[:7]))
+                all_files = [f for f in os.listdir(dir_files) if os.path.isfile(os.path.join(dir_files, f))]
+                limited_files = limited_files_from_config(user_id)
+                available_files = set(all_files) - set(limited_files)
 
-        elif command == COMMAND.CREATE_NEW_FILE:
-            LOG.debug("Client requested to create a new file (client:%s...)" % user_id[:7])
+                tcp_send(self.__sock, RESP.OK, SEP.join(available_files))
+                LOG.debug("List of available files was sent to client (:%s...)" % user_id[:7])
 
-            # print(data, SEP)
-            file_name, access = data.split(SEP)
-            resp = create_file(file_name, user_id, access)
+            elif command == COMMAND.GET_FILE:
+                file_name = data
+                LOG.debug("Client requested to get file \"%s\" (client:%s...)" % (file_name, user_id[:7]))
 
-            tcp_send(c_socket, resp)
-            LOG.debug("Response(code:%s) of file creation was sent to client (:%s...)" % (resp, user_id[:7]))
+                resp, content = get_file_content(file_name, user_id)
 
-            # TODO: if response is OK and access is public, notify other clients
+                tcp_send(self.__sock, RESP.OK, content)
+                LOG.debug("Response (code:%s) on getting requested file was sent to client (:%s...)" % (resp, user_id[:7]))
 
-        elif command == COMMAND.DELETE_FILE:
-            LOG.debug("Client requested to delete a file \"%s\" (client:%s...)" % (data, user_id[:7]))
+            elif command == COMMAND.CREATE_NEW_FILE:
+                LOG.debug("Client requested to create a new file (client:%s...)" % user_id[:7])
 
-            resp = remove_file(file_path=dir_files + data, user_id=user_id)
+                # print(data, SEP)
+                file_name, access = data.split(SEP)
+                resp = create_file(file_name, user_id, access)
 
-            tcp_send(c_socket, resp)
-            LOG.debug("Response(code:%s) of file deletion was sent to client (:%s...)" % (resp, user_id[:7]))
+                tcp_send(self.__sock, resp)
+                LOG.debug("Response(code:%s) of file creation was sent to client (:%s...)" % (resp, user_id[:7]))
 
-            # TODO: if response is OK, notify other clients
+                # TODO: if response is OK and access is public, notify other clients
 
-        elif command == COMMAND.UPDATE_FILE:
-            LOG.debug("Client requested to update a file (client:%s...)" % user_id[:7])
+            elif command == COMMAND.DELETE_FILE:
+                LOG.debug("Client requested to delete a file \"%s\" (client:%s...)" % (data, user_id[:7]))
 
-            cleaned_data = data.split(SEP)
-            file_name, change_type, pos = cleaned_data[:3]
+                resp = remove_file(file_path=dir_files + data, user_id=user_id)
 
-            three_args_length = sum(len(s) for s in cleaned_data[:3]) + 3
-            key = data[three_args_length:]
+                tcp_send(self.__sock, resp)
+                LOG.debug("Response(code:%s) of file deletion was sent to client (:%s...)" % (resp, user_id[:7]))
 
-            print file_name, change_type, pos, key
-            resp = update_file(file_name, change_type, pos, key)
+                # TODO: if response is OK, notify other clients
 
-            tcp_send(c_socket, resp)
-            LOG.debug("Response(code:%s) of change in file was sent to client (:%s...)" % (resp, user_id[:7]))
+            elif command == COMMAND.UPDATE_FILE:
+                LOG.debug("Client requested to update a file (client:%s...)" % user_id[:7])
 
-            # TODO: Notify all clients about changes
-            # notify_clients(file_name, text)
+                cleaned_data = data.split(SEP)
+                file_name, change_type, pos = cleaned_data[:3]
 
-        elif command == COMMAND.WAITING_FOR_UPDATES:
-            current_thread.waiting_for_update = True
+                three_args_length = sum(len(s) for s in cleaned_data[:3]) + 3
+                key = data[three_args_length:]
 
-    close_socket(c_socket, 'Close client socket.')
+                print file_name, change_type, pos, key
+                resp = update_file(file_name, change_type, pos, key)
+
+                tcp_send(self.__sock, resp)
+                LOG.debug("Response(code:%s) of change in file was sent to client (:%s...)" % (resp, user_id[:7]))
+
+                for t in threading.enumerate():
+                    if getattr(t, 'notify', False):
+                        t.notify(file_name, change_type, pos, key)
+
+            elif command == COMMAND.WAITING_FOR_UPDATES:
+                current_thread.waiting_for_update = True
+
+        close_socket(self.__sock, 'Close client socket.')
+
 
 
 def main():
@@ -444,17 +453,16 @@ def main():
     s.listen(0)
 
     threads = []
-
+    sessions = []
     while True:
         try:
             # Client connected
             client_socket, addr = s.accept()
             LOG.debug("New Client connected.")
+            session = EditSession(client_socket, addr)
+            sessions.append(session)
+            session.start()
 
-            # For each connection create a new thread
-            t = threading.Thread(target=handler, args=(client_socket,))
-            threads.append(t)
-            t.start()
         except KeyboardInterrupt:
             LOG.info("Terminating by keyboard interrupt...")
             break
