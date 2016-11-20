@@ -120,7 +120,7 @@ class GUI(object):
                 print "Delete pressed", pos_change
                 # self.text.delete(float(pos_change[0]) + .1)
 
-            elif char != "":
+            elif char != "" and event.keysym != "Escape":
                 self.client.update_file_on_server(current_file, CHANGE_TYPE.INSERT, pos_change, key=char)
                 print "pressed", char, pos_change, event.keysym
 
@@ -247,6 +247,8 @@ class GUI(object):
 
     def upload_list_of_accessible_files_into_menu(self):
         resp_code, accessible_files = self.client.get_accessible_files()
+        # accessible_files = []
+        # resp_code = 0
 
         for filename in accessible_files:
             self.files_list.insert(END, filename)

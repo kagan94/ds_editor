@@ -10,18 +10,27 @@ LOG.info('Client-side started working...')
 
 # Imports----------------------------------------------------------------------
 import ConfigParser as CP
-import os, threading
+import os
+from threading import Thread, Condition, Lock, currentThread
 from gui import *
 from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
 from protocol import tcp_send, tcp_receive, \
                      COMMAND, RESP, ACCESS, SEP, parse_query, \
-                     SERVER_PORT, SERVER_INET_ADDR, close_socket
+                     SERVER_PORT, SERVER_INET_ADDR, close_socket, TERM_CHAR, BUFFER_SIZE
 
 
 class Client(object):
     def __init__(self):
-        self.s = None
+        self.s = None  # it's client socket
         self.gui = None
+
+        self.__send_lock = Lock()  # Only one entity can send out at a time
+
+        self.__rcv_sync_msgs_lock = Condition()  # To wait/notify on received
+        self.__rcv_sync_msgs = []  # To collect the received responses
+        self.__rcv_async_msgs_lock = Condition()
+        self.__rcv_async_msgs = []  # To collect the received notifications
+
 
     # Declare client socket and connecting
     def connect_to_server(self):
@@ -31,7 +40,7 @@ class Client(object):
         try:
             s.connect((SERVER_INET_ADDR, SERVER_PORT))
             self.s = s
-            self.sync_user_id()
+            # self.sync_user_id()
         except socket_error as (code, msg):
             if code == 10061:
                 LOG.error('Socket error occurred. Server does not respond.')
@@ -59,18 +68,22 @@ class Client(object):
             self.user_id = conf.get('USER_INFO', 'user_id')
 
             LOG.debug("Notify server about existing user_id")
-            tcp_send(self.s, COMMAND.NOTIFY_ABOUT_USER_ID, self.user_id)
+            # tcp_send(self.s, COMMAND.NOTIFY_ABOUT_USER_ID, self.user_id)
+
+            res, _ = self.__sync_request(COMMAND.NOTIFY_ABOUT_USER_ID, self.user_id)
 
             # Receive empty response about saving of user_id on the server
-            _ = tcp_receive(self.s)
+            # _ = tcp_receive(self.s)
 
         # If the config was deleted or doesn't exist
         else:
             LOG.debug("Request to the server to generate a new user_id")
-            tcp_send(self.s, COMMAND.GENERATE_USER_ID)
+            # tcp_send(self.s, COMMAND.GENERATE_USER_ID)
 
             # Get response from the server with user_id (_ is command/response)
-            _, self.user_id = parse_query(tcp_receive(self.s))
+            res, self.user_id = self.__sync_request(COMMAND.GENERATE_USER_ID)
+            # print res, self.user_id
+            # _, self.user_id = parse_query(tcp_receive(self.s))
 
             conf = CP.RawConfigParser()
             conf.add_section("USER_INFO")
@@ -84,30 +97,34 @@ class Client(object):
         :return: list with file names that are possible to edit
         '''
         LOG.debug("Request to server to get list of accessible files to edit")
-        tcp_send(self.s, COMMAND.LIST_OF_ACCESIBLE_FILES)
 
-        result, files = parse_query(tcp_receive(self.s))
+        # print "xxxxx"
+        resp, files = self.__sync_request(COMMAND.LIST_OF_ACCESIBLE_FILES)
+        # print resp, files
+        # tcp_send(self.s, COMMAND.LIST_OF_ACCESIBLE_FILES)
+
+        # result, files = parse_query(tcp_receive(self.s))
         LOG.debug("Received response of available files")
 
-        if result == RESP.OK:
+        if resp == RESP.OK:
             files = files.split(SEP)
         else:
             files = []
 
-        return result, files
+        return resp, files
 
     def get_file_on_server(self, file_name):
         '''
         :param file_name: (string)
-        :return: file content, if no errors
+        :return: response code and file content
         '''
         LOG.debug("Request to server to get file")
-        tcp_send(self.s, COMMAND.GET_FILE, file_name)
+        res, content = self.__sync_request(COMMAND.GET_FILE, file_name)
 
-        resp_code, content = parse_query(tcp_receive(self.s))
+        # resp_code, content = parse_query(tcp_receive(self.s))
         LOG.debug("Received response of getting file")
 
-        return resp_code, content
+        return res, content
 
     def create_new_file(self, file_name, access):
         '''
@@ -117,10 +134,12 @@ class Client(object):
         '''
 
         LOG.debug("Request to server to create a new file")
-        data = file_name + SEP + access
-        tcp_send(self.s, COMMAND.CREATE_NEW_FILE, data)
 
-        resp_code, _ = parse_query(tcp_receive(self.s))
+        data = file_name + SEP + access
+        resp_code, _ = self.__sync_request(COMMAND.CREATE_NEW_FILE, data)
+        # tcp_send(self.s, COMMAND.CREATE_NEW_FILE, data)
+
+        # resp_code, _ = parse_query(tcp_receive(self.s))
         LOG.debug("Received response of creation of new file (code:%s" % resp_code)
 
         return resp_code
@@ -131,13 +150,15 @@ class Client(object):
         :return: result of the deletion file on the server
         '''
         LOG.debug("Request to server to delete file\"%s\"" % file_name)
-        tcp_send(self.s, COMMAND.DELETE_FILE, file_name)
+        # tcp_send(self.s, COMMAND.DELETE_FILE, file_name)
+
+        resp_code, _ = self.__sync_request(COMMAND.DELETE_FILE, file_name)
 
         # Receive response of deletion of the file
-        result, files = parse_query(tcp_receive(self.s))
-        LOG.debug("Received response of deletion file operation(code:%s)" % result)
+        # result, _ = parse_query(tcp_receive(self.s))
+        LOG.debug("Received response of deletion file operation(code:%s)" % resp_code)
 
-        if result == RESP.OK:
+        if resp_code == RESP.OK:
             LOG.debug("File was successfully deleted on the server")
 
             # Delete local copy of the file
@@ -146,13 +167,12 @@ class Client(object):
                 LOG.debug("Local copy of file was deleted successfully")
             except:
                 LOG.debug("Local copy of file can't be found. But file was deleted on the server")
-        elif result == RESP.PERMISSION_ERROR:
+        elif resp_code == RESP.PERMISSION_ERROR:
             LOG.debug("Client doesn't have permission to delete file \"%s\"" % file_name)
-        elif result == RESP.FAIL:
+        elif resp_code == RESP.FAIL:
             LOG.debug("Server couldn't delete requested file \"%s\"" % file_name)
-            # LOG.debug("Client File \"%s\" was not deleted..." % file_name)
 
-        return result
+        return resp_code
 
     def update_file_on_server(self, file_name, change_type, pos, key=""):
         LOG.debug("Request to update file on server \"%s\", (change_type:%s, pos:%s)" % (file_name, change_type, pos))
@@ -161,9 +181,12 @@ class Client(object):
         self.gui.block_text_window()
 
         data = SEP.join([file_name, change_type, pos, key])
-        tcp_send(self.s, COMMAND.UPDATE_FILE, data)
 
-        resp_code, _ = parse_query(tcp_receive(self.s))
+        resp_code, _ = self.__sync_request(COMMAND.UPDATE_FILE, data)
+
+        # tcp_send(self.s, COMMAND.UPDATE_FILE, data)
+
+        # resp_code, _ = parse_query(tcp_receive(self.s))
         LOG.debug("Received response on updating file (code:%s)" % resp_code)
 
         # Unblock window in GUI, if response is OK.
@@ -173,6 +196,125 @@ class Client(object):
             self.gui.unblock_text_window()
 
         return resp_code
+
+
+    # Sync/Async functions ===============================================================
+    def __protocol_rcv(self, message):
+        command, data = parse_query(message)
+
+        # Check the received message
+        # whether it's response on requested command or just notification
+        if command == COMMAND.UPDATE_NOTIFICATION:
+            logging.debug('Server wants to notify me: %s' % message)
+            self.__async_notification(message)
+        else:
+            self.__sync_response(message)
+
+    def __sync_request(self, command, data=""):
+        '''Send request and wait for response'''
+        with self.__send_lock:
+            req = SEP.join([command, data])
+
+            if self.__tcp_send(req):
+                with self.__rcv_sync_msgs_lock:
+
+                    LOG.info("Waiting for response...")
+                    while len(self.__rcv_sync_msgs) <= 0:
+                        self.__rcv_sync_msgs_lock.wait()
+                    LOG.info("Receieved response...")
+
+                    response = self.__rcv_sync_msgs.pop()
+                    result, data = parse_query(response)
+
+                    return result, data
+            return None
+
+    def __tcp_send(self, msg):
+        '''Append the terminate character to the data'''
+        m = msg + TERM_CHAR
+
+        r = False
+        try:
+            self.s.sendall(m)
+            r = True
+        except KeyboardInterrupt:
+            self.s.close()
+            logging.info('Ctrl+C issued, terminating ...')
+        except socket_error as e:
+            if e.errno == 107:
+                logging.warn('Server closed connection, terminating ...')
+            else:
+                logging.error('Connection error: %s' % str(e))
+            self.s.close()
+            logging.info('Disconnected')
+        return r
+
+    # Recognize different responses from server (can be notification or answer on requested command)
+    def __sync_response(self, rsp):
+        '''Collect the received response, notify waiting threads'''
+        with self.__rcv_sync_msgs_lock:
+            was_empty = len(self.__rcv_sync_msgs) <= 0
+            self.__rcv_sync_msgs.append(rsp)
+
+            if was_empty:
+                self.__rcv_sync_msgs_lock.notifyAll()
+
+    def __async_notification(self, msg):
+        '''Collect the received server notifications, notify waiting threads'''
+        with self.__rcv_async_msgs_lock:
+            was_empty = len(self.__rcv_async_msgs) <= 0
+            self.__rcv_async_msgs.append(msg)
+            if was_empty:
+                self.__rcv_async_msgs_lock.notifyAll()
+
+    def __tcp_receive(self, buffer_size=BUFFER_SIZE):
+        m = ''
+        while 1:
+            try:
+                # print "receive waiting.."
+                # Receive one block of data according to receive buffer size
+                block = self.s.recv(buffer_size)
+                # print repr(block)
+                m += block
+            except socket_error as (code, msg):
+                if code == 10054:
+                    LOG.error('Server is not available.')
+                else:
+                    LOG.error('Socket error occurred. Error code: %s, %s' % (code, msg))
+                return None
+
+            if m.endswith(TERM_CHAR):
+                break
+        return m[:-len(TERM_CHAR)]
+
+    # Main loops for threads (receive/sending) =========================================================
+    def main_app_loop(self):
+        '''Network Receiver/Message Processor loop'''
+        LOG.info('Falling to receiver loop ...')
+        while 1:
+            # print "want to receive msg.."
+            m = self.__tcp_receive()
+            # m = tcp_receive(self.s)
+            # print "Msg received %s" % m
+
+            if len(m) <= 0:
+                break
+
+            self.__protocol_rcv(m)
+
+    def notifications_loop(self):
+        '''Iterate over received notifications, show them to user, wait if
+        no notifications'''
+
+        logging.info('Falling to notifier loop ...')
+        while 1:
+            with self.__rcv_async_msgs_lock:
+                if len(self.__rcv_async_msgs) <= 0:
+                    self.__rcv_async_msgs_lock.wait()
+                msg = self.__rcv_async_msgs.pop(0)
+
+            LOG.info('Server Notification: %s' % msg)
+
 
 # Main part of client application
 def start_gui(s, user_id):
@@ -252,10 +394,25 @@ def main():
 
     # If connection is established, launch the gui
     if client.s:
+        # Create 2 separate threads for asynchronous notifications and for main app
+        main_app_thread = Thread(name='MainApplicationThread', target=client.main_app_loop)
+        notifications_thread = Thread(name='NotificationsThread', target=client.notifications_loop)
+
+        main_app_thread.start()
+        notifications_thread.start()
+
+        # Synchronize client id
+        client.sync_user_id()
+
         gui = GUI(root, client)
         client.gui = gui
 
+        # Launch GUI window
         root.mainloop()
+
+        # Blocks until the thread finished the work.
+        main_app_thread.join()
+        # notifications_thread.join()
 
     # If user_id doesn't exist, server creates it.
     # Otherwise client notifies the server about its user_id

@@ -116,8 +116,10 @@ def tcp_receive(sock, buffer_size=BUFFER_SIZE):
     m = ''
     while 1:
         try:
+            # print "receive waiting.."
             # Receive one block of data according to receive buffer size
             block = sock.recv(buffer_size)
+            # print repr(block)
             m += block
         except socket_error as (code, msg):
             if code == 10054:
@@ -149,8 +151,8 @@ def parse_query(raw_data):
 
 
 def close_socket(sock, log_msg=""):
-    # Check if the socket is closed disconnected already ( in case there can
-    # be no I/O descriptor
+    # Check if the socket is closed already
+    # in this case there can be no I/O descriptor
     try:
         sock.fileno()
     except socket_error:
