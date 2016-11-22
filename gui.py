@@ -67,6 +67,13 @@ class GUI(object):
 
         self.label.grid(column=0, columnspan=2, sticky=(W))
 
+        var = IntVar()
+        public = Radiobutton(self.root, text="Make file public", variable=var, value=1, state=DISABLED)
+        public.grid(column=2, row=3, sticky=(E))
+
+        private = Radiobutton(self.root, text="Make file private", variable=var, value=2, state=DISABLED)
+        private.grid(column=2, row=4, sticky=(E))
+
         # Button check changes
         btn = Button(self.root, text="Check Changes")
         btn.grid(column=2, row=2, sticky=(E))
