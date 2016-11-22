@@ -78,6 +78,7 @@ class GUI(object):
 
         self.menu.add_command(label="New file", command=self.onFileCreation)
         # self.menu.add_command(label="Open", command=self.onOpenFile)
+        self.menu.add_command(label="Delete", state=DISABLED)
         self.menu.add_command(label="Exit", command=self.onExit)
 
         # Update list of accessible files
@@ -155,6 +156,7 @@ class GUI(object):
 
             # Case: File was successfully downloaded
             if resp_code == RESP.OK:
+                self.menu.entryconfigure("Delete", state="normal")
                 # Unblock and update text window
                 self.unblock_text_window()
                 self.replace_text(content)
@@ -164,6 +166,7 @@ class GUI(object):
 
             # Case: Error response from server on file downloading
             else:
+                self.menu.entryconfigure("Delete", state="disable")
                 self.clear_text()
                 self.block_text_window()
 
@@ -346,4 +349,4 @@ class GUI(object):
 
             # print file_to_change, change_type, pos, key
 
-            self.set_notification_status("another user changed the file")
+self.set_notification_status("another user changed the file")
