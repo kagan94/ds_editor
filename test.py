@@ -19,7 +19,7 @@ class MyDialog(tkSimpleDialog.Dialog):
     def apply(self):
         first = int(self.e1.get())
         second = int(self.e2.var)
-        print first, second # or something
+        print first, second  # or something
 
 root = Tkinter.Tk()
 

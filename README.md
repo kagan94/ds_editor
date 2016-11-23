@@ -1,4 +1,4 @@
-# Online editor 0.0.2
+# Online editor 0.0.3
 ## Done:
 * Basic functions: send/receive
 * server generates user_id and send it back to the clien (if neccessary)
@@ -22,18 +22,23 @@
 * create asynchronous receiving to receive notification about file updating (in process) (Client)
 * send request to other clients last change in the file (queue that collect changes has name "changes")
 
-## TODO Client:
 
-## TODO Server:
-* notify clients if the file was deleted
-* notify clients if the file was created with a public access
+* update file list when the file was created (request from the server that new file is accessible) (GUI)
+* update file list when the file was deleted (GUI)
+* create and handle action to delete a file (GUI/Client/Server)
+* Block text area, radio buttons reset selection, and freeze delete button (as well as notification about deletion arrived and deleted file was opened at that moment)
+* After file deletion, it also will be removed from menu
+* File can be deleted only by owner
+* Change access to the file (gui/client/server)
+* When user changed access to Private, other clients will be rechecked and if they have this file in menu, then local copy will be deleted and the item in menu as well
+* When user changed access to Public, then other clients will receive msg to add item to the list of files menu
+* notify clients if the file was created with a public access (GUI/client/server)
+* notify clients if the file was deleted (GUI/client/server)
+* create a window (by click on check changes) to show the changes between local copy of file and file on server (GUI)
+* write and show changes between local copy and download file
 
-
-## TODO GUI:
-* update file list when the file was created (request from the server that new file is accessible)
-* update file list when the file was deleted
-* action to delete a file
-* create a window (by click on check changes) to show the changes between local copy of file and file on server
+## TODO Client/Server/GUI:
+* !!! Problem with typing ASKII symbols
 
 
 ## !!! Do not do:

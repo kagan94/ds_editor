@@ -1,13 +1,12 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import Tkinter, tkFileDialog, tkMessageBox, ttk, os
 from Tkinter import *
 from ScrolledText import *
-from protocol import RESP, CHANGE_TYPE, parse_change, error_code_to_string
+from protocol import RESP, CHANGE_TYPE, parse_change, error_code_to_string, client_files_dir, \
+                     ACCESS
 import tkSimpleDialog, difflib
-
-
-# local copies of files on the client side
-current_path = os.path.abspath(os.path.dirname(__file__))
-dir_local_files = os.path.join(current_path, "client_local_files")
 
 
 class DialogAskFileName(tkSimpleDialog.Dialog):
@@ -31,8 +30,8 @@ class DialogAskFileName(tkSimpleDialog.Dialog):
 
 
 class GUI(object):
-    previously_selected_file = None
-    count = 0  # <- this var can be deleted later...
+    selected_file = None
+    file_changes = ""
 
     def __init__(self, parent, client):
         '''
@@ -45,7 +44,7 @@ class GUI(object):
 
         # load initial setting
         self.text = ScrolledText(self.root, width=50, height=15)
-        self.text.grid(row=0, column=2)
+        self.text.grid(row=0, column=2, columnspan=3)
 
         # Loading the list of files in menu
         self.files_list = Listbox(self.root, height=5)
@@ -65,19 +64,19 @@ class GUI(object):
         self.label = Label(self.root, textvariable=self.status)
         self.set_notification_status("-")
 
+        # Radio button to choose "Access"
         self.label.grid(column=0, columnspan=2, sticky=(W))
-
-        var = IntVar()
-        public = Radiobutton(self.root, text="Make file public", variable=var, value=1, state=DISABLED)
-        public.grid(column=2, row=3, sticky=(E))
-
-        private = Radiobutton(self.root, text="Make file private", variable=var, value=2, state=DISABLED)
-        private.grid(column=2, row=4, sticky=(E))
+        self.access_button_val = StringVar()
+        self.public_access = Radiobutton(self.root, text="Make file public", variable=self.access_button_val,
+                                         value="0", state=DISABLED, command=self.onAccessChange)
+        self.private_access = Radiobutton(self.root, text="Make file private", variable=self.access_button_val,
+                                          value="1", state=DISABLED, command=self.onAccessChange)
+        self.public_access.grid(column=2, row=2, sticky=(E))
+        self.private_access.grid(column=3, row=2, sticky=(E))
 
         # Button check changes
-        btn = Button(self.root, text="Check Changes")
-        btn.grid(column=2, row=2, sticky=(E))
-        # TODO: create a new window on click if there'we some changes
+        self.button_check_changes = Button(self.root, text="Check Changes", command=self.onCheckChanges)
+        self.button_check_changes.grid(column=4, row=2, sticky=(E))
 
         # Main menu in GUI ----------------------------------------------------------------------------
         self.menu = Menu(self.root)
@@ -85,13 +84,15 @@ class GUI(object):
 
         self.menu.add_command(label="New file", command=self.onFileCreation)
         # self.menu.add_command(label="Open", command=self.onOpenFile)
-        self.menu.add_command(label="Delete", state=DISABLED)
+        self.menu.add_command(label="Delete file", state=DISABLED, command=self.onFileDeletion)
         self.menu.add_command(label="Exit", command=self.onExit)
 
-        # Update list of accessible files
+        # Update list of accessible files (request to server)
         self.upload_list_of_accessible_files_into_menu()
 
+        # Start triggers for the first launch
         self.block_text_window()
+        self.block_button_check_changes()
 
         # Add triggers
         # Recognize any press on the keyboard and"Enter" press
@@ -101,14 +102,14 @@ class GUI(object):
         self.root.protocol('WM_DELETE_WINDOW', self.onExit)
         self.files_list.bind('<<ListboxSelect>>', self.onFileSelection)
 
+
     # Triggers in the GUI window ========================================================================
     # ========= Triggers in text area ===================================================================
-
     def get_index(self, index):
         return tuple(map(int, str(self.text.index(index)).split(".")))
 
     def onKeyPress(self, event):
-        current_file = self.previously_selected_file
+        current_file = self.selected_file
         # inserted character and position of change
         char, pos_change = event.char, str(self.text.index("insert"))
 
@@ -132,9 +133,8 @@ class GUI(object):
                 self.client.update_file_on_server(current_file, CHANGE_TYPE.INSERT, pos_change, key=char)
                 print "pressed", char, pos_change, event.keysym
 
-
     def onEnterPress(self, event):
-        current_file = self.previously_selected_file
+        current_file = self.selected_file
 
         # If any file was chosen
         if current_file:
@@ -147,11 +147,18 @@ class GUI(object):
             else:
                 print(char)
 
+
     # ========= Other triggers ==========================================================================
     def onFileSelection(self, event):
-        selected_file = self.selected_file()
+        # Get currently selected file
+        widget = self.files_list
+        try:
+            index = int(widget.curselection()[0])
+            selected_file = widget.get(index)
+        except:
+            selected_file = None
 
-        if selected_file and (not self.previously_selected_file or self.previously_selected_file != selected_file):
+        if selected_file and (not self.selected_file or self.selected_file != selected_file):
             # Update notification bar
             self.set_notification_status("selected file " + selected_file)
 
@@ -159,21 +166,34 @@ class GUI(object):
             self.save_opened_text()
 
             # Download selected file
-            resp_code, content = self.client.get_file_on_server(selected_file)
+            resp_code, response_data = self.client.get_file_on_server(selected_file)
+
+            # Split additional arguments
+            am_i_owner, file_access, content = response_data
+
+            # Freeze delete and access buttons
+            self.block_delete_button()
+            self.block_access_buttons()
 
             # Case: File was successfully downloaded
             if resp_code == RESP.OK:
-                self.menu.entryconfigure("Delete", state="normal")
+                # If I'm owner, then I can delete file and change its access
+                if am_i_owner == "1":
+                    self.release_delete_button()
+                    self.choose_access_button(file_access)
+                    self.chosen_access = file_access
+
                 # Unblock and update text window
                 self.unblock_text_window()
                 self.replace_text(content)
 
-                # Check whether the local copy was changed or not
-                self.compare_local_copy_with_origin(local_file_name=selected_file, original_text=content)
+                # Check and write changes in the file (prepare them)
+                # When user clicks on the button, then these changes will be shown in the window)
+                self.compare_local_copy_with_origin(selected_file, original_text=content)
+                self.unblock_button_check_changes()
 
             # Case: Error response from server on file downloading
             else:
-                self.menu.entryconfigure("Delete", state="disable")
                 self.clear_text()
                 self.block_text_window()
 
@@ -181,7 +201,7 @@ class GUI(object):
             self.set_notification_status("download file", resp_code)
             # print "Error occurred while tried to download file"
 
-        self.previously_selected_file = selected_file
+            self.selected_file = selected_file
 
     def onFileCreation(self):
         ask_file_dialog = DialogAskFileName(self.root)
@@ -199,14 +219,41 @@ class GUI(object):
             if resp_code == RESP.OK:
                 self.save_opened_text()
 
-                # Create a new empty file
-                with open(file_name, 'w'):
-                    pass
-
+                # add new file to the list
                 self.files_list.insert(END, file_name)
+
+                # Choose access button and activate delete button
+                self.release_delete_button()
+                self.choose_access_button(access)
 
             # Update notification bar
             self.set_notification_status("File creation", resp_code)
+
+    # Trigger on switching between access buttons
+    def onAccessChange(self):
+        curent_access = self.access_button_val.get()
+        file_name = self.selected_file
+
+        # Request to the server to change access to the file
+        if self.chosen_access != curent_access:
+            resp_code = self.client.change_access_to_file(file_name, self.chosen_access)
+
+            self.set_notification_status("change access to file " + str(file_name), resp_code)
+        self.chosen_access = curent_access
+
+    # Trigger on file deletion button
+    def onFileDeletion(self):
+        # Send request to server to delete file
+        file_name = self.selected_file
+
+        resp_code = self.client.delete_file(file_name)
+
+        # Block window, until user will select the file
+        if resp_code == RESP.OK:
+            self.remove_file_from_menu_and_delete_local_copy(file_name)
+
+        # Update notification bar
+        self.set_notification_status("file deletion", resp_code)
 
     # def onOpenFile(self):
     #     tk_file = tkFileDialog.askopenfile(parent=root, mode='rb', title='Select a file')
@@ -219,11 +266,21 @@ class GUI(object):
     #         self.upload_content_into_textfield(contents)
     #         tk_file.close()
 
+    def onCheckChanges(self):
+        window = Toplevel(self.root)
+        changes_window = ScrolledText(window, width=50, height=15, state="normal")
+        changes_window.grid(row=0, column=0)
+
+        # Clear, rewrite and show changes between opened and downloaded file
+        changes_window.delete(1.0, "end")
+        changes_window.insert(END, self.file_changes)
+
     def onExit(self):
-        # if tkMessageBox.askokcancel("Quit", "Do you really want to quit?"):
-        # save opened text in window
-        self.save_opened_text()
-        self.root.destroy()
+        if tkMessageBox.askokcancel("Quit", "Do you really want to quit?"):
+            # save opened text in window
+            self.save_opened_text()
+            self.root.destroy()
+
 
     # Functions to work with interface ==================================================================
     def compare_local_copy_with_origin(self, local_file_name, original_text):
@@ -232,7 +289,7 @@ class GUI(object):
         :param original_text: original content on the server
         :return: (Boolean) True - if the texts are the same
         '''
-        local_file_path = os.path.join(dir_local_files, local_file_name)
+        local_file_path = os.path.join(client_files_dir, local_file_name)
 
         # If local copy of the file exists, then compare copies
         if os.path.isfile(local_file_path):
@@ -240,20 +297,19 @@ class GUI(object):
                 local_content = lf.read()
 
             if local_content == original_text:
-                print "Information is the same"
+                self.file_changes = "Information is the same as in local copy"
 
             else:
-                print "Information doesn't match!"
+                self.file_changes = "Information doesn't match!\n"
 
                 local_content, original_text = local_content.strip().splitlines(), original_text.strip().splitlines()
 
+                # Write mismatches and mismatches
                 for line in difflib.unified_diff(local_content, original_text, lineterm=''):
-                    print line
-
-                # TODO: show changes between local copy and download file in GUI
+                    self.file_changes += line + "\n"
 
         else:
-            print "Local copy was not found"
+            self.file_changes = "Local copy was not found"
 
     def upload_list_of_accessible_files_into_menu(self):
         resp_code, accessible_files = self.client.get_accessible_files()
@@ -268,11 +324,12 @@ class GUI(object):
 
     # Save previously opened text file in local storage
     def save_opened_text(self):
-        if self.previously_selected_file is not None:
-            ps_file_path = os.path.join(dir_local_files, self.previously_selected_file)
+        if self.selected_file is not None:
+            ps_file_path = os.path.join(client_files_dir, self.selected_file)
 
             with open(ps_file_path, "w") as f:
                 content = self.get_text()
+                # content = content.encode('utf-8')
                 f.write(content)
 
     def get_text(self):
@@ -293,21 +350,44 @@ class GUI(object):
         self.text.delete(1.0, "end")
 
     def block_text_window(self):
+        # block text area
         self.text.config(state=DISABLED, background="gray")
 
     def unblock_text_window(self):
         self.text.config(state=NORMAL, background="white")
 
-    def selected_file(self):
-        widget = self.files_list
+    # Delete button block
+    def block_delete_button(self):
+        self.menu.entryconfigure("Delete file", state="disabled")
 
-        try:
-            index = int(widget.curselection()[0])
-            selected_file = widget.get(index)
-        except:
-            selected_file = None
+    # Delete button release
+    def release_delete_button(self):
+        self.menu.entryconfigure("Delete file", state="normal")
 
-        return selected_file
+    # Block and reset Access radio buttons
+    def block_access_buttons(self):
+        self.public_access.configure(state="disabled")
+        self.private_access.configure(state="disabled")
+
+    # Update Access radio buttons
+    def choose_access_button(self, file_access):
+        # Unfreeze buttons if they're not active
+        self.public_access.configure(state="normal")
+        self.private_access.configure(state="normal")
+
+        # Select current access to file in radio button
+        if file_access == ACCESS.PRIVATE:
+            self.private_access.select()
+
+        elif file_access == ACCESS.PUBLIC:
+            self.public_access.select()
+
+    # (un)Block the button "check changes"
+    def block_button_check_changes(self):
+        self.button_check_changes.config(state=DISABLED)
+
+    def unblock_button_check_changes(self):
+        self.button_check_changes.config(state=NORMAL)
 
     def set_notification_status(self, message, err_code=None):
         if err_code:
@@ -315,8 +395,10 @@ class GUI(object):
 
         self.status.set("Last action: " + message)
 
-    #  =========================================================================
-    def update_from_another_client(self, change):
+
+    # NOTIFICATION UPDATES (From server) ===============================================================
+    # ======== Some change was made in file by another client ==========================================
+    def notification_update_file(self, change):
         '''
         Another client made the change => update text window
         :param change: (string) in format
@@ -324,10 +406,10 @@ class GUI(object):
 
         # Parse change that arrived from server
         # position is in format "row.column"
-        file_to_change, change_type, pos, key = parse_change(change)
+        file_to_change, change_type, pos, key = parse_change(change, case_update_file=True)
 
         # And check whether the selected file matches with file in change
-        if self.previously_selected_file and self.selected_file == file_to_change:
+        if self.selected_file and self.selected_file == file_to_change:
             # Depending on change, do the change
 
             if change_type == CHANGE_TYPE.DELETE:
@@ -355,5 +437,99 @@ class GUI(object):
                 self.text.insert(pos, key)
 
             # print file_to_change, change_type, pos, key
+            self.set_notification_status("another user changed the file")
 
-self.set_notification_status("another user changed the file")
+    # ======== Another client created a document with public access ====================================
+    def notification_file_creation(self, change):
+        file_name = parse_change(change)
+        file_name = file_name[0]
+
+        # Update file list
+        self.files_list.insert(END, file_name)
+
+        # Update notification bar
+        self.set_notification_status("another client created file with public access")
+
+    # ======== Another client deleted a document =======================================================
+    def notification_file_deletion(self, change):
+        '''
+        :param change: (string) contain file
+        '''
+        deleted_file = parse_change(change)
+        deleted_file = deleted_file[0]
+
+        # Delete file from menu and its local copy and block the window if current=changed_file
+        notification = "owner deleted file " + str(deleted_file)
+        self.remove_file_from_menu_and_delete_local_copy(deleted_file, notification)
+
+    # ======== Another client changed the access to the file (made it private/public) ==================
+    def notification_changed_access_to_file(self, change):
+        file_name, access = parse_change(change)
+
+        # Owner changed access to file to Private status
+        if access == ACCESS.PRIVATE:
+            notification = "another client changed access file " + str(file_name) + " to private"
+            notification += ". Local copy deleted"
+
+            # Delete file from menu and its local copy and block the window if current=changed_file
+            self.remove_file_from_menu_and_delete_local_copy(file_name, notification)
+
+            # Freeze some buttons (access/delete/text)
+            self.set_state_after_deletion()
+
+        # Owner changed access to file to Public status
+        elif access == ACCESS.PUBLIC:
+            # Add file to the end of list of files
+            self.files_list.insert(END, file_name)
+
+            notification = "another client opened access to file " + str(file_name)
+            self.set_notification_status(notification)
+
+
+    # OTHER FUNCTIONS ==================================================================================
+    # Reset states after deletion
+    def set_state_after_deletion(self):
+        self.clear_text()
+        self.block_delete_button()
+        self.block_access_buttons()
+        self.block_text_window()
+        self.selected_file = None
+        self.block_button_check_changes()
+
+    # Delete file from menu and its local copy (if exists)
+    def remove_file_from_menu_and_delete_local_copy(self, file_name, notification=None):
+        '''
+        :param file_name: (string) file that should ne deleted
+        :param notification: (string)
+            optional param. Will update status bar, if the deletion was performed
+        :return: (Boolean) True if file deletion was performed
+        '''
+        wasFileRemoved = False
+
+        files_in_menu = self.files_list.get(0, END)
+
+        if file_name in files_in_menu:
+            for index, file_in_menu in enumerate(files_in_menu):
+                if file_name == file_in_menu:
+                    # Delete file from menu
+                    self.files_list.delete(index)
+
+                    # Update status bar
+                    if notification:
+                        self.set_notification_status(notification)
+
+                    wasFileRemoved = True
+                    break
+
+        # Delete local copy of the file
+        self.client.delete_local_file_copy(file_name)
+
+        # Check if deleted file is currently opened in the text window
+        if self.selected_file and self.selected_file == file_name:
+            # Change states for some buttons (as after deletion)
+            self.set_state_after_deletion()
+
+            # Set prev. selected file to None to avoid conflicts (when user presses on keys)
+            self.selected_file = None
+
+        return wasFileRemoved

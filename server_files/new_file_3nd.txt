@@ -1,5 +1,2 @@
-<<<<<<< HEAD
-i989u878
-=======
-gffgdff
->>>>>>> origin/master
+H1
+

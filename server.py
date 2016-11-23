@@ -11,7 +11,8 @@ LOG = logging.getLogger()
 
 # Imports----------------------------------------------------------------------
 from protocol import SERVER_PORT, SERVER_INET_ADDR, tcp_send, tcp_receive, close_socket, \
-                     COMMAND, RESP, ACCESS, CHANGE_TYPE, SEP, parse_change, parse_query
+                     COMMAND, RESP, ACCESS, CHANGE_TYPE, SEP, parse_change, parse_query, \
+                     pack_list
 from socket import AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, socket, error as socket_error
 import os, threading
 import uuid  # for generating unique uuid
@@ -19,7 +20,7 @@ import ConfigParser as CP # for server settings
 
 lock = threading.Lock()
 sessions = []
-changes = []
+notifications = []
 
 current_path = os.path.abspath(os.path.dirname(__file__))
 config_file_path = os.path.join(current_path, "server_config.ini")
@@ -93,18 +94,22 @@ def is_user_owner_of_file(conf, file_name, user_id):
     try:
         files = conf.get("OWNERS_FILES", user_id).split(SEP)
         return file_name in files
-
     # If there's no owner of the file
     except:
         return True
 
 
-# def user_has_access_to_file(conf, file_name, user_id):
-#
-#     if is_user_owner_of_file(conf, file_name, user_id) or ....:
-#         return True
-#
-#     return False
+def get_file_access(config, file_name):
+    '''
+    :param config: config object
+    :param file_name: (string)
+    :return: access to the file (enum). 0-Public, 1-Private
+    '''
+    # If file is in "limited files" section, then it's private
+    for (owner_id, files) in config.items('LIMITED_FILES'):
+        if file_name in files.split(SEP):
+            return ACCESS.PRIVATE
+    return ACCESS.PUBLIC
 
 
 def value_of_option_from_config(config, section, option):
@@ -123,26 +128,25 @@ def remove_option_from_config(config, section, option):
         LOG.error("Option(%s) cannot be deleted" % option)
 
 
-
-
 # Main functions -------------------------------------------------
 def create_file(file_name, user_id, access):
     '''
-    :param config: config object
     :param file_name: (string)
     :param user_id: (string)
-    :param access: can be private or
-    :return:
+    :param access: can be public or private
+    :return: response code
     '''
+    global dir_files, lock
+
     lock.acquire()
 
-    res = RESP.OK
-    full_file_path = dir_files + "\\" + file_name
+    resp_code = RESP.OK
+    file_path = os.path.join(dir_files, file_name)
     config = server_config_file()
 
-    if not os.path.isfile(full_file_path):
+    if not os.path.isfile(file_path):
         # Create empty file
-        with open(full_file_path, "w") as f:
+        with open(file_path, "w") as f:
             pass
 
         # Writing in config
@@ -160,26 +164,29 @@ def create_file(file_name, user_id, access):
             except:
                 config.set("LIMITED_FILES", user_id, file_name)
     else:
-        res = RESP.FILE_ALREADY_EXISTS
+        resp_code = RESP.FILE_ALREADY_EXISTS
 
     # if there're some changes - save them
     save_config(config)
     lock.release()
 
-    return res
+    return resp_code
 
 
 def get_file_content(file_name, user_id):
     '''
     :param file_name: (string)
+    :param user_id: (string)
     :return: content from the file (string)
     '''
     global dir_files
+
     file_path = os.path.join(dir_files, file_name)
     limited_files = limited_files_from_config(user_id)
     content, resp_code = "", RESP.OK
 
     lock.acquire()
+    config = server_config_file()
 
     if os.path.isfile(file_path):
         # Check user's permissions
@@ -191,9 +198,15 @@ def get_file_content(file_name, user_id):
     else:
         resp_code = RESP.FILE_DOES_NOT_EXIST
 
+    am_i_owner = is_user_owner_of_file(config, file_name, user_id)
+    am_i_owner = "1" if am_i_owner else "0"
+
+    file_access = get_file_access(config, file_name)
+
     lock.release()
 
-    return resp_code, content
+    sending_data = pack_list([am_i_owner, file_access, content])
+    return resp_code, sending_data
 
 
 def update_file(file_name, change_type, pos, key=""):
@@ -204,18 +217,13 @@ def update_file(file_name, change_type, pos, key=""):
     :param key: (string) - optional, it's letter
     :return:
     '''
-    global dir_files, changes, lock
+    global dir_files, lock
 
     file_path = os.path.join(dir_files, file_name)
     resp = RESP.OK
     row, column = tuple(map(int, pos.split(".")))  # pos is tuple(row, column)
 
     lock.acquire()
-
-    # Add change from client into the queue "changes"
-    change = [file_name, change_type, pos, key]
-    changes.append(change)
-
 
     # Strategy:
     # We read existing file, make some changes, and save this file
@@ -285,18 +293,60 @@ def update_file(file_name, change_type, pos, key=""):
     return resp
 
 
-def remove_file(file_path, user_id):
-    global lock
+def change_access_to_file(user_id, file_name, needed_access):
     '''
-    :param config: config object
-    :param file_name: (string)
     :param user_id: (string)
-    :return: result of deletion (enum)
+    :param file_name: (string)
+    :param needed_access: (enum)
+    :return: response code
     '''
+    global lock
+
+    resp_code = RESP.OK
 
     lock.acquire()
+    config = server_config_file()
 
-    file_name = os.path.basename(file_path)
+    # Only owner can edit the access of the file
+    if is_user_owner_of_file(config, file_name, user_id):
+        files = value_of_option_from_config(config, "LIMITED_FILES", user_id)
+        files = files.split(SEP) if files else []
+
+        # Access to the file should be public
+        if needed_access == ACCESS.PUBLIC:
+            # Make access public by removing file from limited files
+            if file_name in files:
+                files.remove(file_name)
+
+        # Access to the file should be private
+        else:
+            # Add file to limited files (means file is private)
+            if file_name not in files:
+                files.append(file_name)
+
+        config.set("LIMITED_FILES", user_id, pack_list(files))
+        save_config(config)
+
+    # User wants to change access, but he/she is not owner of the file
+    else:
+        resp_code = RESP.PERMISSION_ERROR
+
+    lock.release()
+
+    return resp_code
+
+
+def remove_file(file_name, user_id):
+    global dir_files, lock
+    '''
+    :param file_name: (string)
+    :param user_id: (string)
+    :return: response code (enum)
+    '''
+    file_path = os.path.join(dir_files, file_name)
+    resp_code = RESP.OK
+
+    lock.acquire()
     config = server_config_file()
 
     if is_user_owner_of_file(config, file_name, user_id):
@@ -312,31 +362,35 @@ def remove_file(file_path, user_id):
 
             if file_name in files:
                 files.remove(file_name)
-                config.set("LIMITED_FILES", user_id, SEP.join(files))
-
-            resp = RESP.OK
+                config.set("LIMITED_FILES", user_id, pack_list(files))
         except:
-            resp = RESP.FAIL
+            resp_code = RESP.FAIL
     else:
-        resp = RESP.FILE_ALREADY_EXISTS
+        resp_code = RESP.FILE_ALREADY_EXISTS
 
     save_config(config)
     lock.release()
 
-    return resp
+    return resp_code
 
 
 def notify_other_clients():
     '''Function to notify other clients about changes'''
-    global sessions
-    while changes:
-        change = changes.pop(0)
+    global sessions, notifications
+
+    while notifications:
+        # Each change was packed in the following format [command, [arg1, arg2, arg_n]]
+        change = notifications.pop(0)
+        command = change.pop(0)
+        change = change[0]
+
         for t in sessions:
             # print t.name
-            t.notify(change)
+            t.notify(command, change)
+
 
 # Main handler ---------------------------------------------------
-class EditSession(threading.Thread):
+class ClientSession(threading.Thread):
     def __init__(self, client_sock, client_sock_address):
         threading.Thread.__init__(self)
         self.__sock = client_sock
@@ -344,6 +398,18 @@ class EditSession(threading.Thread):
         self.__send_lock = threading.Lock()
         self.__filename = None
         self.notify_me = True
+
+    # Add notification into the notification queue
+    def add_notification(self, change):
+        global notifications
+        '''
+        :param change: (list) [command, [info_about_changes]]
+        '''
+        global notifications
+
+        # All active user will receive notification, except initializer
+        self.notify_me = False
+        notifications.append(change)
 
     def run(self):
         global dir_files, lock
@@ -392,7 +458,7 @@ class EditSession(threading.Thread):
                 limited_files = limited_files_from_config(user_id)
                 available_files = set(all_files) - set(limited_files)
 
-                resp_code, sending_data = RESP.OK, SEP.join(available_files)
+                resp_code, sending_data = RESP.OK, pack_list(available_files)
                 LOG.debug("List of available files was sent to client (:%s...)" % user_id[:7])
 
             elif command == COMMAND.GET_FILE:
@@ -411,30 +477,54 @@ class EditSession(threading.Thread):
                 resp_code = create_file(file_name, user_id, access)
                 LOG.debug("Response(code:%s) of file creation was sent to client (:%s...)" % (resp_code, user_id[:7]))
 
-                # TODO: if response is OK and access is public, notify other clients
+                # If access is public and result of file creation is OK, then notify other clients
+                if access == ACCESS.PUBLIC and resp_code == RESP.OK:
+                    change = [COMMAND.NOTIFICATION.FILE_CREATION, [file_name]]
+                    self.add_notification(change)
 
             elif command == COMMAND.DELETE_FILE:
                 LOG.debug("Client requested to delete a file \"%s\" (client:%s...)" % (data, user_id[:7]))
 
-                resp_code = remove_file(file_path=dir_files + data, user_id=user_id)
+                file_name = data
+
+                resp_code = remove_file(file_name, user_id=user_id)
                 LOG.debug("Response(code:%s) of file deletion was sent to client (:%s...)" % (resp_code, user_id[:7]))
 
-                # TODO: if response is OK, notify other clients
+                # If response is OK, notify other clients about deletion of this file
+                if resp_code == RESP.OK:
+                    change = [COMMAND.NOTIFICATION.FILE_DELETION, [file_name]]
+                    self.add_notification(change)
 
             elif command == COMMAND.UPDATE_FILE:
                 LOG.debug("Client requested to update a file (client:%s...)" % user_id[:7])
 
-                file_name, change_type, pos, key = parse_change(data)
-                # print file_name, change_type, pos, key
+                file_name, change_type, pos, key = parse_change(data, case_update_file=True)
 
                 resp_code = update_file(file_name, change_type, pos, key)
                 LOG.debug("Response(code:%s) of change in file was sent to client (:%s...)" % (resp_code, user_id[:7]))
 
-                self.notify_me = False
-                notify_other_clients()
+                # Add change from client into the queue "changes"
+                change = [COMMAND.NOTIFICATION.UPDATE_FILE, [file_name, change_type, pos, key]]
+                self.add_notification(change)
+
+            elif command == COMMAND.CHANGE_ACCESS_TO_FILE:
+                LOG.debug("Client requested to update a file (client:%s...)" % user_id[:7])
+
+                file_name, needed_access = parse_query(data)
+
+                resp_code = change_access_to_file(user_id, file_name, needed_access)
+                LOG.debug("Response(code:%s) of change in file was sent to client (:%s...)" % (resp_code, user_id[:7]))
+
+                # If response is OK, notify other clients about deletion of this file
+                if resp_code == RESP.OK:
+                    change = [COMMAND.NOTIFICATION.CHANGED_ACCESS_TO_FILE, [file_name, needed_access]]
+                    self.add_notification(change)
 
             # Send response on requested command
             res = tcp_send(self.__sock, resp_code, sending_data)
+
+            # Trigger notify_clients function (if there're some changes in the queue, it will process them)
+            notify_other_clients()
 
             # Case: some problem with receiving data
             if not res:
@@ -443,14 +533,16 @@ class EditSession(threading.Thread):
 
         close_socket(self.__sock, 'Close client socket.')
 
-    def notify(self, change):
+    def notify(self, command, change):
         # Send notifications to all other users except the master
-        # if self.notify_me:
-        sending_data = SEP.join(change)
-        tcp_send(self.__sock, COMMAND.UPDATE_NOTIFICATION, sending_data)
+        # TODO: Uncommnet line below in final version
+        if self.notify_me:
+            sending_data = pack_list(change)
+            tcp_send(self.__sock, command, sending_data)
 
         # Set current thread to "receive notifications" state
         self.notify_me = True
+
 
 def main():
     global sessions
@@ -459,7 +551,12 @@ def main():
 
     s = socket(AF_INET, SOCK_STREAM)
     s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 0)
-    s.bind((SERVER_INET_ADDR, SERVER_PORT))
+    try:
+        s.bind((SERVER_INET_ADDR, SERVER_PORT))
+    except socket_error as (code, msg):
+        if code == 10048:
+            LOG.error("Server already started working..")
+        return
 
     # Socket in the listening state
     LOG.info("Waiting for a client connection...")
@@ -472,7 +569,7 @@ def main():
             # Client connected
             client_socket, addr = s.accept()
             LOG.debug("New Client connected.")
-            session = EditSession(client_socket, addr)
+            session = ClientSession(client_socket, addr)
             sessions.append(session)
             session.start()
 

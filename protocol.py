@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # Setup Python logging --------------------------------------------------------
 import logging
 
@@ -19,10 +22,15 @@ from socket import error as socket_error
 
 
 # Extend our PYTHONPATH for working directory----------------------------------
+import os
 from sys import path, argv
-from os.path import abspath, sep
-a_path = sep.join(abspath(argv[0]).split(sep)[:-1])
+a_path = os.path.sep.join(os.path.abspath(argv[0]).split(os.path.sep)[:-1])
 path.append(a_path)
+
+
+# Local copies of files on the client side
+current_path = os.path.abspath(os.path.dirname(__file__))
+client_files_dir = os.path.join(current_path, "client_local_files")
 
 
 # Common -----------------------------------------------------------------------
@@ -48,8 +56,17 @@ COMMAND = enum(
     GET_FILE='5',
     DELETE_FILE='6',
     UPDATE_FILE='7',
-    UPDATE_NOTIFICATION='8',
+    CHANGE_ACCESS_TO_FILE='8',
+
+    # Notifications from the server
+    NOTIFICATION=enum(
+        UPDATE_FILE='9',
+        FILE_CREATION='10',
+        FILE_DELETION='11',
+        CHANGED_ACCESS_TO_FILE='12'
+    )
 )
+
 
 # Responses
 RESP = enum(
@@ -77,6 +94,12 @@ CHANGE_TYPE = enum(
 
 # Main functions ---------------------------------------------------------------
 def error_code_to_string(err_code):
+    '''
+    :param err_code: code of the error
+    :return: (string) defenition of the error
+    '''
+    global RESP
+
     err_text = ""
 
     if err_code == RESP.OK:
@@ -100,6 +123,7 @@ def tcp_send(sock, command, data=""):
     '''
     # print "data to send: %s, len: %s" % (data, len(data))
     query = str(command) + SEP + str(data) + TERM_CHAR
+    # query = query.encode('utf-8')
 
     try:
         sock.sendall(query)
@@ -135,6 +159,7 @@ def tcp_receive(sock, buffer_size=BUFFER_SIZE):
         # if m.endswith(TERM_CHAR) or len(block) <= 0:
         if m.endswith(TERM_CHAR):
             break
+    # m = m.encode('utf-8')
     return m[:-len(TERM_CHAR)]
 
 
@@ -166,16 +191,52 @@ def close_socket(sock, log_msg=""):
         LOG.debug(log_msg)
 
 
-def parse_change(change):
+# This function is used in gui.py, server.py
+def parse_change(change, case_update_file=False):
     '''
-    This function is used in gui.py, server.py
-    :param change:
-    :return: file_name(str), change_type(enum), pos(str, format "x.y"), key (str, optional argument)
+    :param change: (string)
+    :param case_update_file: (Boolean)
+    :return: splitted given data by SEP
+        Notice: In case case_update_file = True it will return:
+        file_name(str), change_type(enum), pos(str, format "x.y"), key (str, optional argument)
     '''
     cleaned_data = change.split(SEP)
-    file_name, change_type, pos = cleaned_data[:3]
 
-    three_args_length = sum(len(s) for s in cleaned_data[:3]) + 3
-    key = change[three_args_length:]
+    if not case_update_file:
+        return cleaned_data
 
-    return file_name, change_type, pos, key
+    # Fix. Char "|" can also be written by user
+    # That's why we need to split given data correctly
+    else:
+        file_name, change_type, pos = cleaned_data[:3]
+
+        three_args_length = sum(len(s) for s in cleaned_data[:3]) + 3
+        key = change[three_args_length:]
+
+        return file_name, change_type, pos, key
+
+
+# This function is used in client.py
+# (need to parse get_file response)
+# NOTICE: Content should not be splitted, because it may contain separator
+def parse_get_file_response(raw_data):
+    '''
+    :param data: raw_data
+    :return: am_i_owner (Boolean), file_access (enum), content (string)
+    '''
+    cleaned_data = raw_data.split(SEP)
+    am_i_owner, file_access = cleaned_data[:2]
+
+    two_args_length = sum(len(s) for s in cleaned_data[:2]) + 2
+    content = raw_data[two_args_length:]
+
+    return am_i_owner, file_access, content
+
+
+# Used in both client.py/server.py
+def pack_list(target_list):
+    '''
+    :param target_list: (list)
+    :return: joined list elements by separator
+    '''
+    return SEP.join(target_list)

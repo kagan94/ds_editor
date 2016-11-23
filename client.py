@@ -14,8 +14,13 @@ import os
 from threading import Thread, Condition, Lock
 from gui import *
 from socket import AF_INET, SOCK_STREAM, socket, error as socket_error
-from protocol import COMMAND, RESP, ACCESS, SEP, parse_query, \
-                     SERVER_PORT, SERVER_INET_ADDR, close_socket, TERM_CHAR, BUFFER_SIZE
+from protocol import client_files_dir, parse_get_file_response, pack_list,\
+                     COMMAND, RESP, SEP, parse_query, SERVER_PORT, \
+                     SERVER_INET_ADDR, close_socket, TERM_CHAR, BUFFER_SIZE
+
+
+# Notifications from the server (used in async receiving, to recognize notification commands)
+notification_commands = [notif for notif in COMMAND.NOTIFICATION.__dict__.values() if isinstance(notif, str)]
 
 
 class Client(object):
@@ -114,15 +119,15 @@ class Client(object):
     def get_file_on_server(self, file_name):
         '''
         :param file_name: (string)
-        :return: response code and file content
+        :return: response code and list of [am_i_owner(boolean), file_access(0/1), content(str)]
         '''
         LOG.debug("Request to server to get file")
-        res, content = self.__sync_request(COMMAND.GET_FILE, file_name)
+        res, data = self.__sync_request(COMMAND.GET_FILE, file_name)
+        response_data = parse_get_file_response(data)
 
-        # resp_code, content = parse_query(tcp_receive(self.s))
         LOG.debug("Received response of getting file")
 
-        return res, content
+        return res, response_data
 
     def create_new_file(self, file_name, access):
         '''
@@ -137,7 +142,13 @@ class Client(object):
         resp_code, _ = self.__sync_request(COMMAND.CREATE_NEW_FILE, data)
         # tcp_send(self.s, COMMAND.CREATE_NEW_FILE, data)
 
-        # resp_code, _ = parse_query(tcp_receive(self.s))
+        if resp_code == RESP.OK:
+            file_path = os.path.join(client_files_dir, file_name)
+
+            # Create a new empty file
+            with open(file_path, 'w'):
+                pass
+
         LOG.debug("Received response of creation of new file (code:%s" % resp_code)
 
         return resp_code
@@ -147,6 +158,7 @@ class Client(object):
         :param file_name: file to delete (string)
         :return: result of the deletion file on the server
         '''
+        global client_files_dir
         LOG.debug("Request to server to delete file\"%s\"" % file_name)
         # tcp_send(self.s, COMMAND.DELETE_FILE, file_name)
 
@@ -160,11 +172,8 @@ class Client(object):
             LOG.debug("File was successfully deleted on the server")
 
             # Delete local copy of the file
-            try:
-                os.remove(file_name)
-                LOG.debug("Local copy of file was deleted successfully")
-            except:
-                LOG.debug("Local copy of file can't be found. But file was deleted on the server")
+            self.delete_local_file_copy(file_name)
+
         elif resp_code == RESP.PERMISSION_ERROR:
             LOG.debug("Client doesn't have permission to delete file \"%s\"" % file_name)
         elif resp_code == RESP.FAIL:
@@ -178,8 +187,7 @@ class Client(object):
         # Block window in GUI, until we receive a response
         self.gui.block_text_window()
 
-        data = SEP.join([file_name, change_type, pos, key])
-
+        data = pack_list([file_name, change_type, pos, key])
         resp_code, _ = self.__sync_request(COMMAND.UPDATE_FILE, data)
 
         LOG.debug("Received response on updating file (code:%s)" % resp_code)
@@ -192,22 +200,36 @@ class Client(object):
 
         return resp_code
 
-    # Sync/Async functions ===============================================================
-    def __protocol_rcv(self, message):
-        command, data = parse_query(message)
+    def change_access_to_file(self, file_name, needed_access):
+        '''
+        :param file_name: (string)
+        :param needed_access: (enum) 0 - public, 1 - private
+        :return: response code from the server
+        '''
+        LOG.debug("Request to change the access to file \"%s\", (needed access:%s)"
+                  % (file_name, needed_access))
 
-        # Check the received message
-        # whether it's response on requested command or just notification
-        if command == COMMAND.UPDATE_NOTIFICATION:
-            logging.debug('Server wants to notify me: %s' % message)
-            self.__async_notification(message)
+        data = pack_list([file_name, needed_access])
+        resp_code, _ = self.__sync_request(COMMAND.CHANGE_ACCESS_TO_FILE, data)
+
+        LOG.debug("Received response on changing access to file (code:%s)" % resp_code)
+        return resp_code
+
+    def delete_local_file_copy(self, file_name):
+        file_path = os.path.join(client_files_dir, file_name)
+
+        # print file_path
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+            LOG.debug("Local copy of file was deleted successfully")
         else:
-            self.__sync_response(message)
+            LOG.debug("Local copy of file can't be found. But file was deleted on the server")
 
+    # Sync/Async functions ============================================================================
     def __sync_request(self, command, data=""):
         '''Send request and wait for response'''
         with self.__send_lock:
-            req = SEP.join([command, data])
+            req = pack_list([command, data])
 
             if self.__tcp_send(req):
                 with self.__rcv_sync_msgs_lock:
@@ -226,6 +248,7 @@ class Client(object):
     def __tcp_send(self, msg):
         '''Append the terminate character to the data'''
         m = msg + TERM_CHAR
+        # m = m.encode('utf-8')
 
         r = False
         try:
@@ -283,28 +306,52 @@ class Client(object):
     # Main loops for threads (receive/sending) =========================================================
     def main_app_loop(self):
         '''Network Receiver/Message Processor loop'''
-        LOG.info('Falling to receiver loop ...')
+        LOG.info('Falling into receiver loop ...')
         while 1:
             m = self.__tcp_receive()
 
             if not m or len(m) <= 0:
                 break
 
-            self.__protocol_rcv(m)
+            # Check the received message
+            command, data = parse_query(m)
 
+            # Case: notification arrived
+            if command in notification_commands:
+                logging.debug('Server wants to notify me: %s' % m)
+                self.__async_notification(m)
+
+            # Case: response on requested command
+            else:
+                self.__sync_response(m)
+
+    # Loop for iterating over received notifications
     def notifications_loop(self):
-        '''Iterate over received notifications, show them to user, wait if
-        no notifications'''
+        logging.info('Falling into notifier loop ...')
 
-        logging.info('Falling to notifier loop ...')
-        while 1:
+        while True:
+            # Wait if the we our asynchronous list is empty
+            # When something will be received, we will start processing it
             with self.__rcv_async_msgs_lock:
                 if len(self.__rcv_async_msgs) <= 0:
                     self.__rcv_async_msgs_lock.wait()
-                msg = self.__rcv_async_msgs.pop(0)
-                _, change = parse_query(msg)
 
-                self.gui.update_from_another_client(change)
+                # Fetch arrived message, and process it
+                msg = self.__rcv_async_msgs.pop(0)
+                notification, change = parse_query(msg)
+
+                if notification == COMMAND.NOTIFICATION.UPDATE_FILE:
+                    self.gui.notification_update_file(change)
+
+                elif notification == COMMAND.NOTIFICATION.FILE_CREATION:
+                    self.gui.notification_file_creation(change)
+
+                elif notification == COMMAND.NOTIFICATION.FILE_DELETION:
+                    self.gui.notification_file_deletion(change)
+
+                elif notification == COMMAND.NOTIFICATION.CHANGED_ACCESS_TO_FILE:
+                    self.gui.notification_changed_access_to_file(change)
+
             LOG.info('Server Notification: %s' % msg)
 
 
@@ -319,7 +366,7 @@ def main():
         client.connect_to_server()
         try_num += 1
 
-    # If connection is established, launch the gui
+    # If connection is established, launch the GUI
     if client.s:
         # Create 2 separate threads for asynchronous notifications and for main app
         main_app_thread = Thread(name='MainApplicationThread', target=client.main_app_loop)
