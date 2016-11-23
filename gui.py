@@ -113,6 +113,12 @@ class GUI(object):
         # inserted character and position of change
         char, pos_change = event.char, str(self.text.index("insert"))
 
+        # char = char.encode('utf-8')
+
+        print repr(char)
+        char = char.encode('utf-8')
+        print repr(char)
+
         # If any file was chosen
         if current_file:
             # self.count += 1
@@ -329,7 +335,7 @@ class GUI(object):
 
             with open(ps_file_path, "w") as f:
                 content = self.get_text()
-                # content = content.encode('utf-8')
+                content = content.encode('utf-8')
                 f.write(content)
 
     def get_text(self):
@@ -337,6 +343,7 @@ class GUI(object):
 
         # Tkinter adds \n in the text field. That's why we should deduct it.
         contents = contents[:len(contents) - len("\n")]
+
         return contents
 
     def set_text(self, info):

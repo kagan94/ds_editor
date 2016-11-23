@@ -1,12 +1,20 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Setup Python logging -------------------------------------------------------
+# Setup Python logging --------------------------------------------------------
 import logging
 FORMAT = '%(asctime)-15s %(levelname)s %(message)s'
 logging.basicConfig(level=logging.DEBUG,format=FORMAT)
 LOG = logging.getLogger()
 LOG.info('Client-side started working...')
+
+
+# Set encoding to utf-8 to understand ASCII symbols ---------------------------
+# import sys
+# reload(sys)
+# sys.setdefaultencoding('utf-8')
+
+
 
 # Imports----------------------------------------------------------------------
 import ConfigParser as CP
@@ -306,6 +314,7 @@ class Client(object):
 
             if m.endswith(TERM_CHAR):
                 break
+        # m = m.decode('utf-8')
         return m[:-len(TERM_CHAR)]
 
     # Main loops for threads (receive/sending) =========================================================

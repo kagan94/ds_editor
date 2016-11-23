@@ -2,11 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e3cfe2a4-9677-41a8-9a07-8a3c4ba793b8" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server_files/31231" afterPath="$PROJECT_DIR$/server_files/31231" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server_files/312312" afterPath="$PROJECT_DIR$/server_files/312312" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/client.py" afterPath="$PROJECT_DIR$/client.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gui.py" afterPath="$PROJECT_DIR$/gui.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/protocol.py" afterPath="$PROJECT_DIR$/protocol.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server.py" afterPath="$PROJECT_DIR$/server.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server_config.ini" afterPath="$PROJECT_DIR$/server_config.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server_files/312312" afterPath="$PROJECT_DIR$/server_files/312312" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server_files/new_file_3nd.txt" afterPath="$PROJECT_DIR$/server_files/new_file_3nd.txt" />
     </list>
     <ignored path="ds_editor.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -22,7 +25,7 @@
     <SUITE FILE_PATH="coverage/ds_editor$hacker_context.coverage" NAME="hacker_context Coverage Results" MODIFIED="1478952745032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ds_editor$test.coverage" NAME="test Coverage Results" MODIFIED="1479860894146" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ds_editor$task51.coverage" NAME="task51 Coverage Results" MODIFIED="1478982460764" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="D:/Дела/Учеба/Esti/1 semester/Bioinformatics/HW2,4" />
-    <SUITE FILE_PATH="coverage/ds_editor$client.coverage" NAME="client Coverage Results" MODIFIED="1479863529267" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ds_editor$client.coverage" NAME="client Coverage Results" MODIFIED="1479916780584" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ds_editor$task70.coverage" NAME="task70 Coverage Results" MODIFIED="1479420344271" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="D:/Дела/Учеба/Esti/1 semester/Bioinformatics/HW2,4" />
     <SUITE FILE_PATH="coverage/ds_editor$gui_open_file.coverage" NAME="gui_open_file Coverage Results" MODIFIED="1479499521604" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ds_editor$shared_state_guessword_game_client.coverage" NAME="shared_state_guessword_game_client Coverage Results" MODIFIED="1479651061991" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../../lab4_shared_state/seminar4-sourcecode" />
@@ -40,7 +43,7 @@
     <SUITE FILE_PATH="coverage/ds_editor$gui__1_.coverage" NAME="gui (1) Coverage Results" MODIFIED="1479861172863" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$USER_HOME$/Downloads" />
     <SUITE FILE_PATH="coverage/ds_editor$task63.coverage" NAME="task63 Coverage Results" MODIFIED="1479401646901" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="D:/Дела/Учеба/Esti/1 semester/Bioinformatics/HW2,4" />
     <SUITE FILE_PATH="coverage/ds_editor$hacker_contest_arr_constr.coverage" NAME="hacker_contest_arr_constr Coverage Results" MODIFIED="1478974429339" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ds_editor$server.coverage" NAME="server Coverage Results" MODIFIED="1479863489702" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ds_editor$server.coverage" NAME="server Coverage Results" MODIFIED="1479916778007" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ds_editor$task64.coverage" NAME="task64 Coverage Results" MODIFIED="1479411013581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="D:/Дела/Учеба/Esti/1 semester/Bioinformatics/HW2,4" />
   </component>
   <component name="CreatePatchCommitExecutor">
@@ -51,12 +54,12 @@
     <favorites_list name="ds_editor" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+    <leaf>
       <file leaf-file-name="protocol.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/protocol.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2431">
-              <caret line="162" column="23" selection-start-line="162" selection-start-column="23" selection-end-line="162" selection-end-column="23" />
+            <state relative-caret-position="289">
+              <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
               <folding>
                 <element signature="e#2319#2876#0" expanded="false" />
               </folding>
@@ -64,35 +67,84 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="client.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="server.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/server.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="323">
+              <caret line="19" column="0" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
+              <folding>
+                <element signature="e#1313#1405#0" expanded="false" />
+                <element signature="e#3042#3579#0" expanded="false" />
+                <element signature="e#3624#3804#0" expanded="false" />
+                <element signature="e#3864#4431#0" expanded="false" />
+                <element signature="e#4123#4393#0" expanded="false" />
+                <element signature="e#4506#4851#0" expanded="false" />
+                <element signature="e#4506#4651#1" expanded="false" />
+                <element signature="e#4911#5306#0" expanded="false" />
+                <element signature="e#4911#5062#1" expanded="false" />
+                <element signature="e#5382#5591#0" expanded="false" />
+                <element signature="e#5399#5505#0" expanded="false" />
+                <element signature="e#5721#7046#0" expanded="false" />
+                <element signature="e#7108#8156#0" expanded="false" />
+                <element signature="e#8230#11197#0" expanded="false" />
+                <element signature="e#11279#12573#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="gui.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gui.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding>
+                <element signature="e#48#99#0" expanded="true" />
+                <element signature="e#358#988#0" expanded="false" />
+                <element signature="e#461#874#0" expanded="false" />
+                <element signature="e#905#988#0" expanded="false" />
+                <element signature="e#1106#1196#1" expanded="false" />
+                <element signature="e#4359#4421#0" expanded="false" />
+                <element signature="e#5700#6145#0" expanded="false" />
+                <element signature="e#8411#9268#0" expanded="false" />
+                <element signature="e#10253#10276#0" expanded="false" />
+                <element signature="e#12547#12860#0" expanded="false" />
+                <element signature="e#13747#13824#0" expanded="false" />
+                <element signature="e#13869#13919#0" expanded="false" />
+                <element signature="e#13990#14047#0" expanded="false" />
+                <element signature="e#14122#14177#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="client.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="425">
-              <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="27" selection-end-column="33" />
+            <state relative-caret-position="0">
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="1" selection-end-column="23" />
               <folding>
-                <element signature="e#1816#1881#0" expanded="false" />
-                <element signature="e#1938#2161#0" expanded="false" />
-                <element signature="e#2299#3776#0" expanded="false" />
-                <element signature="e#2299#2376#1" expanded="false" />
-                <element signature="e#2638#3095#0" expanded="false" />
-                <element signature="e#2995#3057#0" expanded="false" />
-                <element signature="e#3176#3776#0" expanded="false" />
-                <element signature="e#3249#3293#0" expanded="false" />
-                <element signature="e#3465#3490#0" expanded="false" />
-                <element signature="e#3822#4417#0" expanded="false" />
-                <element signature="e#3822#3901#1" expanded="false" />
-                <element signature="e#4089#4108#0" expanded="false" />
-                <element signature="e#4472#4884#0" expanded="false" />
-                <element signature="e#4944#5131#1" expanded="false" />
-                <element signature="e#5723#6764#0" expanded="false" />
-                <element signature="e#6096#6138#0" expanded="false" />
-                <element signature="e#7276#7319#0" expanded="false" />
-                <element signature="e#8194#8529#0" expanded="false" />
-                <element signature="e#10098#10378#0" expanded="false" />
-                <element signature="e#10429#10724#0" expanded="false" />
-                <element signature="e#11501#12114#0" expanded="false" />
-                <element signature="e#13632#13679#0" expanded="false" />
-                <element signature="e#13757#14389#0" expanded="false" />
+                <element signature="e#1962#2027#0" expanded="false" />
+                <element signature="e#2084#2307#0" expanded="false" />
+                <element signature="e#2445#2522#1" expanded="false" />
+                <element signature="e#2784#3241#0" expanded="false" />
+                <element signature="e#3141#3203#0" expanded="false" />
+                <element signature="e#3395#3439#0" expanded="false" />
+                <element signature="e#3611#3636#0" expanded="false" />
+                <element signature="e#3968#4563#0" expanded="false" />
+                <element signature="e#3968#4047#1" expanded="false" />
+                <element signature="e#4235#4254#0" expanded="false" />
+                <element signature="e#4618#5030#0" expanded="false" />
+                <element signature="e#5090#5277#1" expanded="false" />
+                <element signature="e#5869#6910#0" expanded="false" />
+                <element signature="e#6242#6284#0" expanded="false" />
+                <element signature="e#7422#7465#0" expanded="false" />
+                <element signature="e#8340#8675#0" expanded="false" />
+                <element signature="e#10244#10524#0" expanded="false" />
+                <element signature="e#10575#10870#0" expanded="false" />
+                <element signature="e#11679#12292#0" expanded="false" />
+                <element signature="e#13810#13857#0" expanded="false" />
+                <element signature="e#13935#14567#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -182,18 +234,36 @@
     </navigator>
     <panes>
       <pane id="Scratches" />
-      <pane id="ProjectPane">
-        <subPane />
-      </pane>
       <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ds_editor" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ds_editor" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ds_editor" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="js-jscs-nodeInterpreter" value="D:\Programs\node.exe" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
+    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file://C:/Users/Leo/Desktop/DS/hw1/ds_editor/gui.py" />
   </component>
   <component name="RunManager" selected="Python.client">
     <configuration default="false" name="server" type="PythonConfigurationType" factoryName="Python" temporary="true">
@@ -524,9 +594,9 @@
       <list size="5">
         <item index="0" class="java.lang.String" itemvalue="Python.client" />
         <item index="1" class="java.lang.String" itemvalue="Python.server" />
-        <item index="2" class="java.lang.String" itemvalue="Python.gui (1)" />
-        <item index="3" class="java.lang.String" itemvalue="Python.test" />
-        <item index="4" class="java.lang.String" itemvalue="Python.gui" />
+        <item index="2" class="java.lang.String" itemvalue="Python.gui" />
+        <item index="3" class="java.lang.String" itemvalue="Python.gui (1)" />
+        <item index="4" class="java.lang.String" itemvalue="Python.test" />
       </list>
     </recent_temporary>
   </component>
@@ -547,15 +617,15 @@
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.12783661" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.12934947" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32843137" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32843137" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32996634" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31164902" sideWeight="0.5030257" order="4" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.34341908" sideWeight="0.50653595" order="4" side_tool="true" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18683812" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.15196079" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4852941" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297546" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3993174" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -563,9 +633,9 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Documentation" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" x="92" y="92" width="1182" height="544" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24962178" sideWeight="0.49346405" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32935154" sideWeight="0.4969743" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Concurrent Activities Diagram" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32935154" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Concurrent Activities Diagram" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.5866013" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
@@ -578,10 +648,10 @@
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32843137" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32996634" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31089258" sideWeight="0.5030257" order="4" side_tool="true" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15196079" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.48033282" sideWeight="0.50653595" order="4" side_tool="true" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4852941" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.12783661" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24962178" sideWeight="0.49346405" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32935154" sideWeight="0.4969743" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18683812" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -614,30 +684,11 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="12" />
+      <option name="time" value="13" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/task50.txt" />
-    <entry file="file://$PROJECT_DIR$/task50.py" />
-    <entry file="file://D:/Дела/Учеба/Esti/1 semester/Bioinformatics/HW2,4/task51.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="32" column="37" selection-start-line="32" selection-start-column="37" selection-end-line="32" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/hacker_contest_arr_constr.py" />
-    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/python_stubs/197792189/PyQt4/QtGui/QMainWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="298">
-          <caret line="366" column="8" selection-start-line="366" selection-start-column="8" selection-end-line="366" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test_gui.py" />
-    <entry file="file://$PROJECT_DIR$/gui_save_file.py" />
     <entry file="file://D:/Programs/Anaconda/Lib/tkinter/filedialog.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="310">
@@ -767,14 +818,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/python_stubs/-124434928/__builtin__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="194">
-          <caret line="3356" column="8" selection-start-line="3356" selection-start-column="8" selection-end-line="3356" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Downloads/gui.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="146">
@@ -860,28 +903,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://D:/Programs/python_2.7/Lib/threading.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="142">
-          <caret line="800" column="0" selection-start-line="800" selection-start-column="0" selection-end-line="800" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="11" column="28" selection-start-line="11" selection-start-column="28" selection-end-line="11" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://D:/Programs/python_2.7/Lib/lib-tk/Tkinter.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="163">
-          <caret line="1536" column="0" selection-start-line="1536" selection-start-column="0" selection-end-line="1536" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/test.py" />
     <entry file="file://$PROJECT_DIR$/../gui-new.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="193">
@@ -897,16 +919,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/protocol.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2431">
-          <caret line="162" column="23" selection-start-line="162" selection-start-column="23" selection-end-line="162" selection-end-column="23" />
-          <folding>
-            <element signature="e#2319#2876#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Downloads/gui (1).py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="380">
@@ -914,68 +926,230 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server.py">
+    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/snapshots/ds_editor4.pstat">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Programs/python_2.7/Lib/threading.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="194">
+          <caret line="630" column="6" selection-start-line="630" selection-start-column="6" selection-end-line="630" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="uml://Python/#C:/Users/Leo/Desktop/DS/hw1/ds_editor/gui.py">
+      <provider selected="true" editor-type-id="UmlEditorProvider">
+        <state>
+          <ID>Python</ID>
+          <OriginalElement>#C:/Users/Leo/Desktop/DS/hw1/ds_editor/gui.py</OriginalElement>
+          <nodes>
+            <node x="493.5" y="0.0">_abcoll.Hashable</node>
+            <node x="0.0" y="600.0">gui.GUI</node>
+            <node x="1279.0" y="322.0">Tkinter.Toplevel</node>
+            <node x="1222.5" y="0.0">Tkinter.BaseWidget</node>
+            <node x="1672.0" y="0.0">_abcoll.Container</node>
+            <node x="1199.0" y="423.0">tkSimpleDialog.Dialog</node>
+            <node x="204.0" y="1753.0">_abcoll.Iterator</node>
+            <node x="1267.5" y="745.0">gui.DialogAskFileName</node>
+            <node x="0.0" y="1753.0">_abcoll.Iterable</node>
+            <node x="331.0" y="146.0">object</node>
+          </nodes>
+          <notes />
+          <edges>
+            <edge source="object" target="_abcoll.Hashable">
+              <point x="0.0" y="-202.0" />
+              <point x="0.0" y="48.0" />
+            </edge>
+            <edge source="Tkinter.Toplevel" target="Tkinter.BaseWidget">
+              <point x="0.0" y="-25.5" />
+              <point x="0.0" y="136.0" />
+            </edge>
+            <edge source="gui.DialogAskFileName" target="tkSimpleDialog.Dialog">
+              <point x="0.0" y="-103.0" />
+              <point x="0.0" y="136.0" />
+            </edge>
+            <edge source="tkSimpleDialog.Dialog" target="Tkinter.Toplevel">
+              <point x="0.0" y="-136.0" />
+              <point x="0.0" y="25.5" />
+            </edge>
+            <edge source="gui.GUI" target="object">
+              <point x="0.0" y="-554.0" />
+              <point x="0.0" y="202.0" />
+            </edge>
+          </edges>
+          <settings layout="Hierarchic Group" zoom="0.4239644970414202" x="-367.0" y="1000.0" />
+          <SelectedNodes />
+          <Categories>
+            <Category>Fields</Category>
+            <Category>Methods</Category>
+          </Categories>
+          <SCOPE>All</SCOPE>
+        </state>
+      </provider>
+    </entry>
+    <entry file="uml://Python/#C:/Users/Leo/Desktop/DS/hw1/ds_editor/server.py">
+      <provider selected="true" editor-type-id="UmlEditorProvider">
+        <state>
+          <ID>Python</ID>
+          <OriginalElement>#C:/Users/Leo/Desktop/DS/hw1/ds_editor/server.py</OriginalElement>
+          <nodes>
+            <node x="" y="">server.ClientSession</node>
+          </nodes>
+          <notes />
+          <edges />
+          <settings layout="Hierarchic Group" zoom="1.0" x="71.0" y="173.0" />
+          <SelectedNodes />
+          <Categories>
+            <Category>Methods</Category>
+          </Categories>
+          <SCOPE>All</SCOPE>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Programs/python_2.7/Lib/site-packages/pycallgraph/output/output.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="483">
+          <caret line="100" column="43" selection-start-line="100" selection-start-column="43" selection-end-line="100" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Programs/python_2.7/Lib/site-packages/pycallgraph/pycallgraph.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="442">
-          <caret line="32" column="0" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+          <caret line="31" column="0" selection-start-line="31" selection-start-column="0" selection-end-line="31" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Programs/python_2.7/Lib/lib-tk/Tkinter.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="194">
+          <caret line="1536" column="0" selection-start-line="1536" selection-start-column="0" selection-end-line="1536" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/python_stubs/-124434928/__builtin__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="143">
+          <caret line="1768" column="8" selection-start-line="1768" selection-start-column="8" selection-end-line="1768" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Programs/python_2.7/Lib/encodings/utf_8.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="194">
+          <caret line="15" column="0" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/protocol.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
           <folding>
-            <element signature="e#3747#4930#0" expanded="false" />
-            <element signature="e#18599#18831#0" expanded="false" />
-            <element signature="e#18879#18945#0" expanded="false" />
+            <element signature="e#2319#2876#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="uml://Python/#C:/Users/Leo/Desktop/DS/hw1/ds_editor/client.py">
+      <provider selected="true" editor-type-id="UmlEditorProvider">
+        <state>
+          <ID>Python</ID>
+          <OriginalElement>#C:/Users/Leo/Desktop/DS/hw1/ds_editor/client.py</OriginalElement>
+          <nodes>
+            <node x="" y="">client.Client</node>
+          </nodes>
+          <notes />
+          <edges />
+          <settings layout="Hierarchic Group" zoom="1.0" x="45.5" y="93.5" />
+          <SelectedNodes />
+          <Categories>
+            <Category>Fields</Category>
+            <Category>Methods</Category>
+          </Categories>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="1" selection-end-column="23" />
+          <folding>
+            <element signature="e#1962#2027#0" expanded="false" />
+            <element signature="e#2084#2307#0" expanded="false" />
+            <element signature="e#2445#2522#1" expanded="false" />
+            <element signature="e#2784#3241#0" expanded="false" />
+            <element signature="e#3141#3203#0" expanded="false" />
+            <element signature="e#3395#3439#0" expanded="false" />
+            <element signature="e#3611#3636#0" expanded="false" />
+            <element signature="e#3968#4563#0" expanded="false" />
+            <element signature="e#3968#4047#1" expanded="false" />
+            <element signature="e#4235#4254#0" expanded="false" />
+            <element signature="e#4618#5030#0" expanded="false" />
+            <element signature="e#5090#5277#1" expanded="false" />
+            <element signature="e#5869#6910#0" expanded="false" />
+            <element signature="e#6242#6284#0" expanded="false" />
+            <element signature="e#7422#7465#0" expanded="false" />
+            <element signature="e#8340#8675#0" expanded="false" />
+            <element signature="e#10244#10524#0" expanded="false" />
+            <element signature="e#10575#10870#0" expanded="false" />
+            <element signature="e#11679#12292#0" expanded="false" />
+            <element signature="e#13810#13857#0" expanded="false" />
+            <element signature="e#13935#14567#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gui.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="92" selection-start-line="6" selection-start-column="76" selection-end-line="6" selection-end-column="92" />
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
+            <element signature="e#48#99#0" expanded="true" />
             <element signature="e#358#988#0" expanded="false" />
             <element signature="e#461#874#0" expanded="false" />
             <element signature="e#905#988#0" expanded="false" />
             <element signature="e#1106#1196#1" expanded="false" />
             <element signature="e#4359#4421#0" expanded="false" />
-            <element signature="e#5574#6019#0" expanded="false" />
-            <element signature="e#8285#9142#0" expanded="false" />
-            <element signature="e#10127#10150#0" expanded="false" />
-            <element signature="e#12421#12734#0" expanded="false" />
-            <element signature="e#13622#13699#0" expanded="false" />
-            <element signature="e#13744#13794#0" expanded="false" />
-            <element signature="e#13865#13922#0" expanded="false" />
-            <element signature="e#13997#14052#0" expanded="false" />
+            <element signature="e#5700#6145#0" expanded="false" />
+            <element signature="e#8411#9268#0" expanded="false" />
+            <element signature="e#10253#10276#0" expanded="false" />
+            <element signature="e#12547#12860#0" expanded="false" />
+            <element signature="e#13747#13824#0" expanded="false" />
+            <element signature="e#13869#13919#0" expanded="false" />
+            <element signature="e#13990#14047#0" expanded="false" />
+            <element signature="e#14122#14177#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client.py">
+    <entry file="file://$PROJECT_DIR$/server.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="27" selection-end-column="33" />
+        <state relative-caret-position="323">
+          <caret line="19" column="0" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
           <folding>
-            <element signature="e#1816#1881#0" expanded="false" />
-            <element signature="e#1938#2161#0" expanded="false" />
-            <element signature="e#2299#3776#0" expanded="false" />
-            <element signature="e#2299#2376#1" expanded="false" />
-            <element signature="e#2638#3095#0" expanded="false" />
-            <element signature="e#2995#3057#0" expanded="false" />
-            <element signature="e#3176#3776#0" expanded="false" />
-            <element signature="e#3249#3293#0" expanded="false" />
-            <element signature="e#3465#3490#0" expanded="false" />
-            <element signature="e#3822#4417#0" expanded="false" />
-            <element signature="e#3822#3901#1" expanded="false" />
-            <element signature="e#4089#4108#0" expanded="false" />
-            <element signature="e#4472#4884#0" expanded="false" />
-            <element signature="e#4944#5131#1" expanded="false" />
-            <element signature="e#5723#6764#0" expanded="false" />
-            <element signature="e#6096#6138#0" expanded="false" />
-            <element signature="e#7276#7319#0" expanded="false" />
-            <element signature="e#8194#8529#0" expanded="false" />
-            <element signature="e#10098#10378#0" expanded="false" />
-            <element signature="e#10429#10724#0" expanded="false" />
-            <element signature="e#11501#12114#0" expanded="false" />
-            <element signature="e#13632#13679#0" expanded="false" />
-            <element signature="e#13757#14389#0" expanded="false" />
+            <element signature="e#1313#1405#0" expanded="false" />
+            <element signature="e#3042#3579#0" expanded="false" />
+            <element signature="e#3624#3804#0" expanded="false" />
+            <element signature="e#3864#4431#0" expanded="false" />
+            <element signature="e#4123#4393#0" expanded="false" />
+            <element signature="e#4506#4851#0" expanded="false" />
+            <element signature="e#4506#4651#1" expanded="false" />
+            <element signature="e#4911#5306#0" expanded="false" />
+            <element signature="e#4911#5062#1" expanded="false" />
+            <element signature="e#5382#5591#0" expanded="false" />
+            <element signature="e#5399#5505#0" expanded="false" />
+            <element signature="e#5721#7046#0" expanded="false" />
+            <element signature="e#7108#8156#0" expanded="false" />
+            <element signature="e#8230#11197#0" expanded="false" />
+            <element signature="e#11279#12573#0" expanded="false" />
           </folding>
         </state>
       </provider>

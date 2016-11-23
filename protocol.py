@@ -123,7 +123,7 @@ def tcp_send(sock, command, data=""):
     '''
     # print "data to send: %s, len: %s" % (data, len(data))
     query = str(command) + SEP + str(data) + TERM_CHAR
-    # query = query.encode('utf-8')
+    # query = query.decode('utf-8')
 
     try:
         sock.sendall(query)
@@ -159,7 +159,8 @@ def tcp_receive(sock, buffer_size=BUFFER_SIZE):
         # if m.endswith(TERM_CHAR) or len(block) <= 0:
         if m.endswith(TERM_CHAR):
             break
-    # m = m.encode('utf-8')
+
+    # m = m.decode('utf-8')
     return m[:-len(TERM_CHAR)]
 
 
@@ -239,4 +240,5 @@ def pack_list(target_list):
     :param target_list: (list)
     :return: joined list elements by separator
     '''
-    return SEP.join(target_list)
+    content = SEP.join(target_list)
+    return content
