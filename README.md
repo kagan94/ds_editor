@@ -44,4 +44,4 @@
 ## !!! Do not do:
 * user deletes selected region of text
 
-![View of our online editor](http://clip2net.com/clip/m527982/789d3-clip-181kb.png)
+![View of our online editor](http://clip2net.com/clip/m527982/98895-clip-176kb.png)
