@@ -27,6 +27,11 @@ config_file_path = os.path.join(current_path, "server_config.ini")
 dir_files = os.path.join(os.getcwd(), "server_files")
 
 
+# If folder for server copies of files doesn't exist, then create it
+if not os.path.exists(dir_files):
+    os.makedirs(dir_files)
+
+
 # Functions to work with config -----------------------------------
 def server_config_file():
     '''

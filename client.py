@@ -23,6 +23,11 @@ from protocol import client_files_dir, parse_get_file_response, pack_list,\
 notification_commands = [notif for notif in COMMAND.NOTIFICATION.__dict__.values() if isinstance(notif, str)]
 
 
+# If folder for client local files doesn't exist, then create it
+if not os.path.exists(client_files_dir):
+    os.makedirs(client_files_dir)
+
+
 class Client(object):
     def __init__(self):
         self.s = None  # it's client socket
