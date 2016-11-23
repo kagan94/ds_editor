@@ -36,10 +36,7 @@
 * notify clients if the file was deleted (GUI/client/server)
 * create a window (by click on check changes) to show the changes between local copy of file and file on server (GUI)
 * write and show changes between local copy and download file
-
-## TODO Client/Server/GUI:
-* !!! Problem with typing ASKII symbols
-
+* Fixed problem with typing ASKII symbols
 
 ## !!! Do not do:
 * user deletes selected region of text
