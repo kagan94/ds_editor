@@ -2,14 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e3cfe2a4-9677-41a8-9a07-8a3c4ba793b8" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server_files/31231" afterPath="$PROJECT_DIR$/server_files/31231" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server_files/312312" afterPath="$PROJECT_DIR$/server_files/312312" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/server_files/31231" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/server_files/312312" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/server_files/new_file_3nd.txt" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/client.py" afterPath="$PROJECT_DIR$/client.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gui.py" afterPath="$PROJECT_DIR$/gui.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/protocol.py" afterPath="$PROJECT_DIR$/protocol.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server.py" afterPath="$PROJECT_DIR$/server.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server_files/new_file_3nd.txt" afterPath="$PROJECT_DIR$/server_files/new_file_3nd.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server_config.ini" afterPath="$PROJECT_DIR$/server_config.ini" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server_files/test.txt" afterPath="$PROJECT_DIR$/server_files/test.txt" />
     </list>
     <ignored path="ds_editor.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -25,7 +26,7 @@
     <SUITE FILE_PATH="coverage/ds_editor$hacker_context.coverage" NAME="hacker_context Coverage Results" MODIFIED="1478952745032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ds_editor$test.coverage" NAME="test Coverage Results" MODIFIED="1479860894146" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ds_editor$task51.coverage" NAME="task51 Coverage Results" MODIFIED="1478982460764" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="D:/Дела/Учеба/Esti/1 semester/Bioinformatics/HW2,4" />
-    <SUITE FILE_PATH="coverage/ds_editor$client.coverage" NAME="client Coverage Results" MODIFIED="1479916780584" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ds_editor$client.coverage" NAME="client Coverage Results" MODIFIED="1479921987490" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ds_editor$task70.coverage" NAME="task70 Coverage Results" MODIFIED="1479420344271" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="D:/Дела/Учеба/Esti/1 semester/Bioinformatics/HW2,4" />
     <SUITE FILE_PATH="coverage/ds_editor$gui_open_file.coverage" NAME="gui_open_file Coverage Results" MODIFIED="1479499521604" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ds_editor$shared_state_guessword_game_client.coverage" NAME="shared_state_guessword_game_client Coverage Results" MODIFIED="1479651061991" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../../lab4_shared_state/seminar4-sourcecode" />
@@ -43,7 +44,7 @@
     <SUITE FILE_PATH="coverage/ds_editor$gui__1_.coverage" NAME="gui (1) Coverage Results" MODIFIED="1479861172863" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$USER_HOME$/Downloads" />
     <SUITE FILE_PATH="coverage/ds_editor$task63.coverage" NAME="task63 Coverage Results" MODIFIED="1479401646901" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="D:/Дела/Учеба/Esti/1 semester/Bioinformatics/HW2,4" />
     <SUITE FILE_PATH="coverage/ds_editor$hacker_contest_arr_constr.coverage" NAME="hacker_contest_arr_constr Coverage Results" MODIFIED="1478974429339" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ds_editor$server.coverage" NAME="server Coverage Results" MODIFIED="1479916778007" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ds_editor$server.coverage" NAME="server Coverage Results" MODIFIED="1479921923124" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ds_editor$task64.coverage" NAME="task64 Coverage Results" MODIFIED="1479411013581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="D:/Дела/Учеба/Esti/1 semester/Bioinformatics/HW2,4" />
   </component>
   <component name="CreatePatchCommitExecutor">
@@ -54,103 +55,7 @@
     <favorites_list name="ds_editor" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="protocol.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/protocol.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
-              <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-              <folding>
-                <element signature="e#2319#2876#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="server.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/server.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="19" column="0" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
-              <folding>
-                <element signature="e#1313#1405#0" expanded="false" />
-                <element signature="e#3042#3579#0" expanded="false" />
-                <element signature="e#3624#3804#0" expanded="false" />
-                <element signature="e#3864#4431#0" expanded="false" />
-                <element signature="e#4123#4393#0" expanded="false" />
-                <element signature="e#4506#4851#0" expanded="false" />
-                <element signature="e#4506#4651#1" expanded="false" />
-                <element signature="e#4911#5306#0" expanded="false" />
-                <element signature="e#4911#5062#1" expanded="false" />
-                <element signature="e#5382#5591#0" expanded="false" />
-                <element signature="e#5399#5505#0" expanded="false" />
-                <element signature="e#5721#7046#0" expanded="false" />
-                <element signature="e#7108#8156#0" expanded="false" />
-                <element signature="e#8230#11197#0" expanded="false" />
-                <element signature="e#11279#12573#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="gui.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gui.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding>
-                <element signature="e#48#99#0" expanded="true" />
-                <element signature="e#358#988#0" expanded="false" />
-                <element signature="e#461#874#0" expanded="false" />
-                <element signature="e#905#988#0" expanded="false" />
-                <element signature="e#1106#1196#1" expanded="false" />
-                <element signature="e#4359#4421#0" expanded="false" />
-                <element signature="e#5700#6145#0" expanded="false" />
-                <element signature="e#8411#9268#0" expanded="false" />
-                <element signature="e#10253#10276#0" expanded="false" />
-                <element signature="e#12547#12860#0" expanded="false" />
-                <element signature="e#13747#13824#0" expanded="false" />
-                <element signature="e#13869#13919#0" expanded="false" />
-                <element signature="e#13990#14047#0" expanded="false" />
-                <element signature="e#14122#14177#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="client.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/client.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="1" selection-end-column="23" />
-              <folding>
-                <element signature="e#1962#2027#0" expanded="false" />
-                <element signature="e#2084#2307#0" expanded="false" />
-                <element signature="e#2445#2522#1" expanded="false" />
-                <element signature="e#2784#3241#0" expanded="false" />
-                <element signature="e#3141#3203#0" expanded="false" />
-                <element signature="e#3395#3439#0" expanded="false" />
-                <element signature="e#3611#3636#0" expanded="false" />
-                <element signature="e#3968#4563#0" expanded="false" />
-                <element signature="e#3968#4047#1" expanded="false" />
-                <element signature="e#4235#4254#0" expanded="false" />
-                <element signature="e#4618#5030#0" expanded="false" />
-                <element signature="e#5090#5277#1" expanded="false" />
-                <element signature="e#5869#6910#0" expanded="false" />
-                <element signature="e#6242#6284#0" expanded="false" />
-                <element signature="e#7422#7465#0" expanded="false" />
-                <element signature="e#8340#8675#0" expanded="false" />
-                <element signature="e#10244#10524#0" expanded="false" />
-                <element signature="e#10575#10870#0" expanded="false" />
-                <element signature="e#11679#12292#0" expanded="false" />
-                <element signature="e#13810#13857#0" expanded="false" />
-                <element signature="e#13935#14567#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -189,10 +94,10 @@
         <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/../gui-new.py" />
         <option value="$USER_HOME$/Downloads/gui (1).py" />
-        <option value="$PROJECT_DIR$/protocol.py" />
-        <option value="$PROJECT_DIR$/gui.py" />
-        <option value="$PROJECT_DIR$/client.py" />
         <option value="$PROJECT_DIR$/server.py" />
+        <option value="$PROJECT_DIR$/client.py" />
+        <option value="$PROJECT_DIR$/gui.py" />
+        <option value="$PROJECT_DIR$/protocol.py" />
       </list>
     </option>
   </component>
@@ -203,10 +108,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1382" />
-    <option name="height" value="744" />
+    <option name="x" value="1" />
+    <option name="y" value="1" />
+    <option name="width" value="1364" />
+    <option name="height" value="726" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -236,24 +141,7 @@
       <pane id="Scratches" />
       <pane id="Scope" />
       <pane id="ProjectPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="ds_editor" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="ds_editor" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="ds_editor" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
+        <subPane />
       </pane>
     </panes>
   </component>
@@ -614,16 +502,16 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="true" />
+    <frame x="1" y="1" width="1364" height="726" extended-state="6" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.12934947" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.12934947" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32843137" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32843137" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32996634" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.34341908" sideWeight="0.50653595" order="4" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.40184048" sideWeight="0.50653595" order="4" side_tool="true" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18683812" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4852941" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297546" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -991,25 +879,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="uml://Python/#C:/Users/Leo/Desktop/DS/hw1/ds_editor/server.py">
-      <provider selected="true" editor-type-id="UmlEditorProvider">
-        <state>
-          <ID>Python</ID>
-          <OriginalElement>#C:/Users/Leo/Desktop/DS/hw1/ds_editor/server.py</OriginalElement>
-          <nodes>
-            <node x="" y="">server.ClientSession</node>
-          </nodes>
-          <notes />
-          <edges />
-          <settings layout="Hierarchic Group" zoom="1.0" x="71.0" y="173.0" />
-          <SelectedNodes />
-          <Categories>
-            <Category>Methods</Category>
-          </Categories>
-          <SCOPE>All</SCOPE>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://D:/Programs/python_2.7/Lib/site-packages/pycallgraph/output/output.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="483">
@@ -1048,16 +917,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/protocol.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-          <folding>
-            <element signature="e#2319#2876#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="uml://Python/#C:/Users/Leo/Desktop/DS/hw1/ds_editor/client.py">
       <provider selected="true" editor-type-id="UmlEditorProvider">
         <state>
@@ -1077,40 +936,66 @@
         </state>
       </provider>
     </entry>
+    <entry file="uml://Python/#C:/Users/Leo/Desktop/DS/hw1/ds_editor/server.py">
+      <provider selected="true" editor-type-id="UmlEditorProvider">
+        <state>
+          <ID>Python</ID>
+          <OriginalElement>#C:/Users/Leo/Desktop/DS/hw1/ds_editor/server.py</OriginalElement>
+          <nodes>
+            <node x="" y="">server.Server</node>
+            <node x="" y="">server.ClientSession</node>
+          </nodes>
+          <notes />
+          <edges />
+          <settings layout="Hierarchic Group" zoom="0.9" x="330.22222222222223" y="290.44444444444446" />
+          <SelectedNodes />
+          <Categories>
+            <Category>Inner Classes</Category>
+            <Category>Methods</Category>
+          </Categories>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/protocol.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1433">
+          <caret line="167" column="59" selection-start-line="167" selection-start-column="59" selection-end-line="167" selection-end-column="59" />
+          <folding>
+            <element signature="e#2319#2876#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/client.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="1" selection-end-column="23" />
+        <state relative-caret-position="8">
+          <caret line="361" column="53" selection-start-line="361" selection-start-column="53" selection-end-line="361" selection-end-column="53" />
           <folding>
             <element signature="e#1962#2027#0" expanded="false" />
             <element signature="e#2084#2307#0" expanded="false" />
             <element signature="e#2445#2522#1" expanded="false" />
-            <element signature="e#2784#3241#0" expanded="false" />
-            <element signature="e#3141#3203#0" expanded="false" />
-            <element signature="e#3395#3439#0" expanded="false" />
-            <element signature="e#3611#3636#0" expanded="false" />
-            <element signature="e#3968#4563#0" expanded="false" />
-            <element signature="e#3968#4047#1" expanded="false" />
-            <element signature="e#4235#4254#0" expanded="false" />
-            <element signature="e#4618#5030#0" expanded="false" />
-            <element signature="e#5090#5277#1" expanded="false" />
-            <element signature="e#5869#6910#0" expanded="false" />
-            <element signature="e#6242#6284#0" expanded="false" />
-            <element signature="e#7422#7465#0" expanded="false" />
-            <element signature="e#8340#8675#0" expanded="false" />
-            <element signature="e#10244#10524#0" expanded="false" />
-            <element signature="e#10575#10870#0" expanded="false" />
-            <element signature="e#11679#12292#0" expanded="false" />
-            <element signature="e#13810#13857#0" expanded="false" />
-            <element signature="e#13935#14567#0" expanded="false" />
+            <element signature="e#3281#3325#0" expanded="false" />
+            <element signature="e#3751#3830#1" expanded="false" />
+            <element signature="e#4018#4037#0" expanded="false" />
+            <element signature="e#4401#4813#0" expanded="false" />
+            <element signature="e#4873#5060#1" expanded="false" />
+            <element signature="e#5652#6693#0" expanded="false" />
+            <element signature="e#6025#6067#0" expanded="false" />
+            <element signature="e#7205#7248#0" expanded="false" />
+            <element signature="e#8123#8458#0" expanded="false" />
+            <element signature="e#10068#10348#0" expanded="false" />
+            <element signature="e#10399#10694#0" expanded="false" />
+            <element signature="e#11503#12116#0" expanded="false" />
+            <element signature="e#13634#13681#0" expanded="false" />
+            <element signature="e#13759#14391#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gui.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state relative-caret-position="464">
+          <caret line="543" column="0" selection-start-line="543" selection-start-column="0" selection-end-line="543" selection-end-column="0" />
           <folding>
             <element signature="e#48#99#0" expanded="true" />
             <element signature="e#358#988#0" expanded="false" />
@@ -1118,38 +1003,35 @@
             <element signature="e#905#988#0" expanded="false" />
             <element signature="e#1106#1196#1" expanded="false" />
             <element signature="e#4359#4421#0" expanded="false" />
-            <element signature="e#5700#6145#0" expanded="false" />
-            <element signature="e#8411#9268#0" expanded="false" />
-            <element signature="e#10253#10276#0" expanded="false" />
-            <element signature="e#12547#12860#0" expanded="false" />
-            <element signature="e#13747#13824#0" expanded="false" />
-            <element signature="e#13869#13919#0" expanded="false" />
-            <element signature="e#13990#14047#0" expanded="false" />
-            <element signature="e#14122#14177#0" expanded="false" />
+            <element signature="e#5706#6151#0" expanded="false" />
+            <element signature="e#10259#10282#0" expanded="false" />
+            <element signature="e#12553#12866#0" expanded="false" />
+            <element signature="e#13789#13866#0" expanded="false" />
+            <element signature="e#13911#13961#0" expanded="false" />
+            <element signature="e#14032#14089#0" expanded="false" />
+            <element signature="e#14164#14219#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="19" column="0" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
+        <state relative-caret-position="160">
+          <caret line="186" column="11" selection-start-line="186" selection-start-column="11" selection-end-line="186" selection-end-column="11" />
           <folding>
-            <element signature="e#1313#1405#0" expanded="false" />
-            <element signature="e#3042#3579#0" expanded="false" />
-            <element signature="e#3624#3804#0" expanded="false" />
-            <element signature="e#3864#4431#0" expanded="false" />
-            <element signature="e#4123#4393#0" expanded="false" />
-            <element signature="e#4506#4851#0" expanded="false" />
-            <element signature="e#4506#4651#1" expanded="false" />
-            <element signature="e#4911#5306#0" expanded="false" />
-            <element signature="e#4911#5062#1" expanded="false" />
-            <element signature="e#5382#5591#0" expanded="false" />
-            <element signature="e#5399#5505#0" expanded="false" />
-            <element signature="e#5721#7046#0" expanded="false" />
-            <element signature="e#7108#8156#0" expanded="false" />
-            <element signature="e#8230#11197#0" expanded="false" />
-            <element signature="e#11279#12573#0" expanded="false" />
+            <element signature="e#1348#1440#0" expanded="false" />
+            <element signature="e#3077#3614#0" expanded="false" />
+            <element signature="e#3659#3839#0" expanded="false" />
+            <element signature="e#3899#4466#0" expanded="false" />
+            <element signature="e#4158#4428#0" expanded="false" />
+            <element signature="e#4541#4886#0" expanded="false" />
+            <element signature="e#4541#4686#1" expanded="false" />
+            <element signature="e#4946#5341#0" expanded="false" />
+            <element signature="e#4946#5097#1" expanded="false" />
+            <element signature="e#5417#5626#0" expanded="false" />
+            <element signature="e#5434#5540#0" expanded="false" />
+            <element signature="e#7143#8191#0" expanded="false" />
+            <element signature="e#11234#12528#0" expanded="false" />
           </folding>
         </state>
       </provider>

@@ -11,7 +11,7 @@ LOG = logging.getLogger()
 
 # Info--------------------------------------------------------------------------
 ___NAME = "Protocol to the online document editor"
-___VER = "0.0.1"
+___VER = "0.0.3"
 
 def __info():
     return '%s version %s' % (___NAME, ___VER)
@@ -153,14 +153,10 @@ def tcp_receive(sock, buffer_size=BUFFER_SIZE):
                 LOG.error('Socket error occurred. Error code: %s, %s' % (code, msg))
             return None
 
-        # print "received: %s, len: %s" % (block, len(block))
-        # print m, TERM_CHAR, m.endswith(TERM_CHAR)
-
         # if m.endswith(TERM_CHAR) or len(block) <= 0:
         if m.endswith(TERM_CHAR):
             break
 
-    # m = m.decode('utf-8')
     return m[:-len(TERM_CHAR)]
 
 
@@ -170,7 +166,6 @@ def parse_query(raw_data):
     :return: (command, data)
     '''
     # Split string by separator to get the command and data
-    # print raw_data
     cleaned_data = raw_data.split(SEP)
     command, data = cleaned_data[0], raw_data[len(cleaned_data[0]) + 1:]
     return command, data

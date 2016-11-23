@@ -15,8 +15,9 @@ from protocol import SERVER_PORT, SERVER_INET_ADDR, tcp_send, tcp_receive, close
                      pack_list
 from socket import AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, socket, error as socket_error
 import os, threading
+import codecs  # encoding library
 import uuid  # for generating unique uuid
-import ConfigParser as CP # for server settings
+import ConfigParser as CP  # for server settings
 
 
 # Set encoding to utf-8 to understand ASCII symbols ---------------
@@ -269,17 +270,17 @@ class Server(object):
         resp = RESP.OK
         row, column = tuple(map(int, pos.split(".")))  # pos is tuple(row, column)
 
+        # decode symbol to avoid problems with encoding
+        key = key.decode("utf-8")
+
         lock.acquire()
 
         # Strategy:
         # We read existing file, make some changes, and save this file
 
-        with open(file_path, "r") as f:
+        with codecs.open(file_path, "r", "utf-8") as f:
             lines = f.read()
-            # lines = lines.decode('utf-8')
             lines = lines.split("\n")
-
-            # lines = lines.encode("utf-8")
 
         # print "============="
         # print line, row, i, len(lines), lines, len(line)
@@ -335,12 +336,8 @@ class Server(object):
             lines[row - 1] = line[:column] + key + line[column:]
 
         # Write new changes into file
-        with open(file_path, "w") as f:
+        with codecs.open(file_path, "w", "utf-8") as f:
             content = "\n".join(lines)
-            # .encode('utf-8')
-            # print repr(content)
-            # content = content.encode('utf-8')
-
             f.write(content)
 
         lock.release()

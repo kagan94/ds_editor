@@ -115,9 +115,9 @@ class GUI(object):
 
         # char = char.encode('utf-8')
 
-        print repr(char)
-        char = char.encode('utf-8')
-        print repr(char)
+        # print repr(char)
+        # char = char.encode('utf-8')
+        # print repr(char)
 
         # If any file was chosen
         if current_file:
@@ -336,6 +336,7 @@ class GUI(object):
             with open(ps_file_path, "w") as f:
                 content = self.get_text()
                 content = content.encode('utf-8')
+                print repr(content)
                 f.write(content)
 
     def get_text(self):

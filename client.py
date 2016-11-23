@@ -84,12 +84,9 @@ class Client(object):
             self.user_id = conf.get('USER_INFO', 'user_id')
 
             LOG.debug("Notify server about existing user_id")
-            # tcp_send(self.s, COMMAND.NOTIFY_ABOUT_USER_ID, self.user_id)
-
-            res, _ = self.__sync_request(COMMAND.NOTIFY_ABOUT_USER_ID, self.user_id)
 
             # Receive empty response about saving of user_id on the server
-            # _ = tcp_receive(self.s)
+            res, _ = self.__sync_request(COMMAND.NOTIFY_ABOUT_USER_ID, self.user_id)
 
         # If the config was deleted or doesn't exist
         else:
@@ -98,8 +95,6 @@ class Client(object):
 
             # Get response from the server with user_id (_ is command/response)
             res, self.user_id = self.__sync_request(COMMAND.GENERATE_USER_ID)
-            # print res, self.user_id
-            # _, self.user_id = parse_query(tcp_receive(self.s))
 
             conf = CP.RawConfigParser()
             conf.add_section("USER_INFO")
@@ -261,7 +256,8 @@ class Client(object):
     def __tcp_send(self, msg):
         '''Append the terminate character to the data'''
         m = msg + TERM_CHAR
-        # m = m.encode('utf-8')
+        m = m.encode('utf-8')
+        # print "Client posle: " + repr(m)
 
         r = False
         try:
