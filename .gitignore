@@ -1,0 +1,8 @@
+.idea/misc.xml
+.idea/ds_editor.iml
+.idea/vcs.xml
+*.xml
+*.pyc
+*.txt
+client_local_files/
+server_files/
