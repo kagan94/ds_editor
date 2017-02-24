@@ -1,4 +1,7 @@
 # Online editor 0.0.3
+![View of our online editor](https://raw.githubusercontent.com/kagan94/ds_editor/master/Images_to_report/src1.jpg)
+![View of our online editor](https://raw.githubusercontent.com/kagan94/ds_editor/master/Images_to_report/src2.png)
+
 ## Done:
 * Basic functions: send/receive
 * server generates user_id and send it back to the clien (if neccessary)
@@ -37,8 +40,3 @@
 * create a window (by click on check changes) to show the changes between local copy of file and file on server (GUI)
 * write and show changes between local copy and download file
 * Fixed problem with typing ASKII symbols
-
-## !!! Do not do:
-* user deletes selected region of text
-
-![View of our online editor](http://clip2net.com/clip/m527982/98895-clip-176kb.png)
